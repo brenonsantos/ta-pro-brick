@@ -140,10 +140,10 @@
   },
   {
     "id": "challenge-003",
-    "shortName": "BMW 320i 2021",
-    "title": "BMW 320i M Sport 2.0 Turbo 2021 — Teto solar e revisões na concessionária",
-    "askingPrice": 219000,
-    "originalUrl": "https://exemplo-anuncio.com.br/bmw-320i-2021",
+    "shortName": "Chevette 1988",
+    "title": "1988 Chevrolet Chevette Cinza",
+    "askingPrice": 14999,
+    "originalUrl": "https://www.facebook.com/marketplace/item/2330018541109873",
     "clues": [
       {
         "id": 1,
@@ -151,8 +151,8 @@
         "label": "Título e Foto de Capa",
         "type": "title_and_cover",
         "content": {
-          "title": "BMW 320i M Sport 2021 Cinza Dravit",
-          "coverImageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80"
+          "title": "1988 Chevrolet Chevette Cinza",
+          "coverImageUrl": "/cars/chevette-1988/1.jpg"
         }
       },
       {
@@ -162,10 +162,12 @@
         "type": "gallery",
         "content": {
           "images": [
-            "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1000&q=80"
+            "/cars/chevette-1988/1.jpg",
+            "/cars/chevette-1988/2.jpg",
+            "/cars/chevette-1988/3.jpg",
+            "/cars/chevette-1988/4.jpg",
+            "/cars/chevette-1988/5.jpg",
+            "/cars/chevette-1988/6.jpg"
           ]
         }
       },
@@ -175,7 +177,7 @@
         "label": "Descrição do Anunciante",
         "type": "description",
         "content": {
-          "description": "BMW 320i ActiveFlex M Sport 2021/2021 na clássica cor Cinza Dravit com interior em couro Cognac. Pacote M Sport original de fábrica (rodas 19, para-choques M, volante M e suspensão esportiva). Apenas 34.000 km rodados, todas as revisões feitas rigorosamente na concessionária Eurobike. PPF frontal instalado desde zero km. Sem retoques de pintura, laudo cautelar 100% aprovado. Veículo de não fumante."
+          "description": "Carro sem podre só pega e andar já dá pra colocar placa preto muito íntegro não aceito troca não quero história triste se for nem perca meu tempo \nAceito troca por moto\n\nSobre esse veículo:\n• 94.000 km rodados\n• Câmbio manual\n• Cor externa: Grey · Cor interna: Grey\n• Placa número: ••••••3\n• Tipo de combustível: Gasolina\n• 3+ proprietários"
         }
       },
       {
@@ -185,7 +187,7 @@
         "type": "location",
         "content": {
           "location": {
-            "city": "São Paulo",
+            "city": "Itapecerica da Serra",
             "state": "SP"
           }
         }
@@ -196,7 +198,7 @@
         "label": "Tempo de Publicação",
         "type": "time",
         "content": {
-          "timeOnMarket": "Publicado há 6 dias • 420 visualizações"
+          "timeOnMarket": "Anunciado há 3 semanas em Itapecerica da Serra, SP"
         }
       }
     ]

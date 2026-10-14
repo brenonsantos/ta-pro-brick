@@ -11,7 +11,7 @@ Expand the single-round prototype into a 5-car interactive showcase featuring di
 - [x] Create `src/data/mockChallenges.json` containing 5 detailed vehicle listings:
   1. **VW Gol GTS 1.8 1988 (R$ 44.900):** Anúncio real OLX (8 fotos locais) — hot hatch clássico.
   2. **Jeep Renegade Longitude 2023 (R$ 91.990):** Anúncio real Facebook Marketplace (13 fotos locais) — SUV moderno flex aut.
-  3. **BMW 320i M Sport 2021 (R$ 219.000):** Sedã premium moderno (testa tolerâncias maiores).
+  3. **Chevrolet Chevette 1988 (R$ 14.999):** Anúncio real Facebook Marketplace (6 fotos locais) — Clássico acessível, "só pega e andar".
   4. **Chevrolet Opala Comodoro 4.1 1988 (R$ 78.000):** Clássico 6 cilindros nacional.
   5. **VW Fusca Itamar 1994 (R$ 95.000):** Relíquia de garagem com valor inflacionado.
 
