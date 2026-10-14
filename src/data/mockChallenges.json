@@ -68,10 +68,10 @@
   },
   {
     "id": "challenge-002",
-    "shortName": "Uno Mille 2002",
-    "title": "Fiat Uno Mille Fire 1.0 2002 — Básico, 2 portas, econômico",
-    "askingPrice": 13500,
-    "originalUrl": "https://exemplo-anuncio.com.br/fiat-uno-mille-2002",
+    "shortName": "Renegade 2023",
+    "title": "Jeep Renegade Longitude 2023 Flex Aut. Abaixo da Fipe",
+    "askingPrice": 91990,
+    "originalUrl": "https://www.facebook.com/marketplace/item/1836371024374429/",
     "clues": [
       {
         "id": 1,
@@ -79,8 +79,8 @@
         "label": "Título e Foto de Capa",
         "type": "title_and_cover",
         "content": {
-          "title": "Fiat Uno Mille Fire 2002 2 Portas",
-          "coverImageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80"
+          "title": "Jeep Renegade Longitude 2023 Flex Aut. Abaixo da Fipe",
+          "coverImageUrl": "/cars/renegade-longitude-2023/1.jpg"
         }
       },
       {
@@ -90,9 +90,19 @@
         "type": "gallery",
         "content": {
           "images": [
-            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"
+            "/cars/renegade-longitude-2023/1.jpg",
+            "/cars/renegade-longitude-2023/2.jpg",
+            "/cars/renegade-longitude-2023/3.jpg",
+            "/cars/renegade-longitude-2023/4.jpg",
+            "/cars/renegade-longitude-2023/5.jpg",
+            "/cars/renegade-longitude-2023/6.jpg",
+            "/cars/renegade-longitude-2023/7.jpg",
+            "/cars/renegade-longitude-2023/8.jpg",
+            "/cars/renegade-longitude-2023/9.jpg",
+            "/cars/renegade-longitude-2023/10.jpg",
+            "/cars/renegade-longitude-2023/11.jpg",
+            "/cars/renegade-longitude-2023/12.jpg",
+            "/cars/renegade-longitude-2023/13.jpg"
           ]
         }
       },
@@ -102,7 +112,7 @@
         "label": "Descrição do Anunciante",
         "type": "description",
         "content": {
-          "description": "Uno Mille Fire 2002/2002, motor Fire 1.0 8v super econômico fazendo 14 km/l na cidade. Pneus bons, suspensão revisada mês passado, sem vazamentos de óleo. Tem detalhes de pintura e pequenos riscos de uso, afinal é um carro de 20 anos para o dia a dia. Interior limpo, estofamento original. Documentação 2024 toda paga em meu nome, só transferir."
+          "description": "ABAIXO DA TABELA FIPE. CARRO MUITO NOVO. VERSÃO LONGITUDE. FINANCIA E ACEITA TROCA. 50.000 km rodados, câmbio automático, cor preta (Black / Black), combustível Flex, excelente estado de conservação, sem danos ou problemas significativos."
         }
       },
       {
@@ -112,8 +122,8 @@
         "type": "location",
         "content": {
           "location": {
-            "city": "Betim",
-            "state": "MG"
+            "city": "Balneário Camboriú",
+            "state": "SC"
           }
         }
       },
@@ -123,7 +133,7 @@
         "label": "Tempo de Publicação",
         "type": "time",
         "content": {
-          "timeOnMarket": "Publicado há 1 dia • 89 visualizações"
+          "timeOnMarket": "Anunciado há 1 dia em Balneário Camboriú, SC"
         }
       }
     ]
