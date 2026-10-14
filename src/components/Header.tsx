@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({
             Tá pro <span className="text-amber-400">Brick</span>
           </h1>
           <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            Protótipo • Desafio Diário
+            Desafio Diário
           </p>
         </div>
       </div>

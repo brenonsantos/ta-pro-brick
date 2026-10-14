@@ -192,7 +192,7 @@ export function App() {
 
       {/* Footer info */}
       <footer className="border-t border-zinc-900 py-4 text-center text-xs text-zinc-600">
-        <p>Tá pro Brick • Protótipo de Validação • 5 Carros de Teste • Não afiliado à tabela FIPE</p>
+        <p>Tá pro Brick • Adivinhe o Preço dos Anúncios • Não afiliado à Tabela Fipe</p>
       </footer>
 
       {/* Modals */}

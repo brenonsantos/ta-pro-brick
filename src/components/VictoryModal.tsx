@@ -217,7 +217,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
               className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-dashed border-zinc-800 py-2.5 text-xs sm:text-sm font-medium text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 transition cursor-pointer"
             >
               <RotateCcw className="h-4 w-4" />
-              Reiniciar Protótipo para Novo Teste
+              Jogar Novamente este Anúncio
             </button>
           </div>
         )}

@@ -59,7 +59,6 @@ export const GuessHistory: React.FC<GuessHistoryProps> = ({ guesses, maxAttempts
         <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
           Seus Palpites ({guesses.length}/{maxAttempts})
         </h3>
-        <span className="text-xs sm:text-sm text-zinc-500">Wordle dos Motores</span>
       </div>
 
       <div className="space-y-2.5">
