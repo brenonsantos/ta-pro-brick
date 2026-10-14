@@ -1,10 +1,10 @@
 [
   {
     "id": "challenge-001",
-    "shortName": "Gol GTS 1993",
-    "title": "VW Gol GTS 1.8 1993 Álcool — Painel Satélite e Recaro",
-    "askingPrice": 48900,
-    "originalUrl": "https://exemplo-anuncio.com.br/vw-gol-gts-1993",
+    "shortName": "Gol GTS 1988",
+    "title": "Volkswagen Gol Geração I GTS 1.8 8V Álcool Mec. 2P 1988",
+    "askingPrice": 44900,
+    "originalUrl": "https://df.olx.com.br/distrito-federal-e-regiao/autos-e-pecas/carros-vans-e-utilitarios/volkswagen-gol-geracao-i-gts-1-8-8v-alcool-mec-2p-1988-1542105959?lis=listing_2020",
     "clues": [
       {
         "id": 1,
@@ -12,8 +12,8 @@
         "label": "Título e Foto de Capa",
         "type": "title_and_cover",
         "content": {
-          "title": "VW Gol GTS 1.8 1993 Álcool",
-          "coverImageUrl": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"
+          "title": "Volkswagen Gol Geração I GTS 1.8 8V Álcool Mec. 2P 1988",
+          "coverImageUrl": "/cars/gol-gts-1988/1.jpg"
         }
       },
       {
@@ -23,10 +23,14 @@
         "type": "gallery",
         "content": {
           "images": [
-            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1000&q=80"
+            "/cars/gol-gts-1988/1.jpg",
+            "/cars/gol-gts-1988/2.jpg",
+            "/cars/gol-gts-1988/3.jpg",
+            "/cars/gol-gts-1988/4.jpg",
+            "/cars/gol-gts-1988/5.jpg",
+            "/cars/gol-gts-1988/6.jpg",
+            "/cars/gol-gts-1988/7.jpg",
+            "/cars/gol-gts-1988/8.jpg"
           ]
         }
       },
@@ -36,7 +40,7 @@
         "label": "Descrição do Anunciante",
         "type": "description",
         "content": {
-          "description": "Gol GTS 1993/1993 com motor AP 1.8 a álcool cadastrado. Bancos Recaro originais sem rasgos, painel satélite funcionando 100%, rádio VolksLine de época. Rodas pingo d'água aro 14 com 4 pneus novos. Túnel e longarinas impecáveis, sem trincas nem soldas. Faróis e milhas Arteb originais. Carro de garagem para colecionador exigente. Apto para placa preta. Não aceito trocas nem propostas absurdas."
+          "description": "Gol GTS 1.8 AP - 1988/88. GTS de verdade, ano 1988/88, motor AP 1.8 a álcool, carburado e câmbio manual. Carro bastante íntegro de estrutura. Motor todo revisado. O carro preserva itens originais no padrão de fábrica digno de ser um placa preta. Um clássico nacional que está cada vez mais difícil de encontrar. Carro para quem conhece, gosta e quer preservar. Valor negociável."
         }
       },
       {
@@ -46,8 +50,8 @@
         "type": "location",
         "content": {
           "location": {
-            "city": "Curitiba",
-            "state": "PR"
+            "city": "Brasília (Guará II)",
+            "state": "DF"
           }
         }
       },
@@ -57,7 +61,7 @@
         "label": "Tempo de Publicação",
         "type": "time",
         "content": {
-          "timeOnMarket": "Publicado há 3 dias • 142 visualizações"
+          "timeOnMarket": "Anúncio recente no DF • Final de placa 7"
         }
       }
     ]
