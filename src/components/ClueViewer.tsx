@@ -143,7 +143,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           </div>
           <div className="mt-2.5 text-xs sm:text-sm leading-relaxed">
             {isDescriptionUnlocked ? (
-              <p className="line-clamp-5 italic text-zinc-300">
+              <p className="italic text-zinc-300 whitespace-pre-line">
                 "{descriptionClue?.content.description}"
               </p>
             ) : (
