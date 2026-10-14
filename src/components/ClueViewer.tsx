@@ -52,13 +52,23 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
     <div className="space-y-4 sm:space-y-5">
       {/* Photo Stage */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl">
-        <div className="relative aspect-[16/10] w-full bg-zinc-950 sm:aspect-[16/9]">
+        <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden">
           {allPhotos.length > 0 ? (
-            <img
-              src={allPhotos[activePhotoIndex] || allPhotos[0]}
-              alt="Foto do anúncio"
-              className="h-full w-full object-cover transition-opacity duration-300"
-            />
+            <>
+              {/* Ambient blurred backdrop */}
+              <img
+                src={allPhotos[activePhotoIndex] || allPhotos[0]}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover opacity-25 blur-xl scale-110 pointer-events-none select-none"
+              />
+              {/* Main uncropped photo */}
+              <img
+                src={allPhotos[activePhotoIndex] || allPhotos[0]}
+                alt="Foto do anúncio"
+                className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none"
+              />
+            </>
           ) : (
             <div className="flex h-full w-full items-center justify-center text-zinc-600">
               <Camera className="h-12 w-12" />
@@ -66,7 +76,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           )}
 
           {/* Photo Counter & Badge */}
-          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex items-center gap-2">
+          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 flex items-center gap-2">
             <span className="rounded-full bg-black/75 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md border border-white/10">
               📷 {activePhotoIndex + 1}/{allPhotos.length}
             </span>
@@ -82,14 +92,14 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
             <>
               <button
                 onClick={handlePrevPhoto}
-                className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
+                className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Foto anterior"
               >
                 <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
               <button
                 onClick={handleNextPhoto}
-                className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
+                className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Próxima foto"
               >
                 <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
