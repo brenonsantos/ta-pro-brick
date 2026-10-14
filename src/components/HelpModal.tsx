@@ -13,12 +13,18 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
       <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
         <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
           <div className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-amber-400" />
-            <h2 className="text-base font-extrabold text-white">Como Jogar Tá pro Brick</h2>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+              <HelpCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Primeira vez aqui?</span>
+              <h2 className="text-base font-extrabold text-white">Como Jogar o Tá pro Brick</h2>
+            </div>
           </div>
           <button
             onClick={onClose}
             className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white transition"
+            aria-label="Fechar"
           >
             <X className="h-4 w-4" />
           </button>
@@ -86,9 +92,9 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
         <button
           onClick={onClose}
-          className="mt-6 w-full rounded-xl bg-zinc-800 py-3 text-xs font-bold text-white hover:bg-zinc-700 transition"
+          className="mt-6 w-full rounded-xl bg-amber-500 py-3.5 text-sm font-extrabold uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 active:scale-[0.98] transition"
         >
-          Entendi, vamos pro jogo!
+          Entendi, vamos jogar! 🚀
         </button>
       </div>
     </div>

@@ -12,6 +12,7 @@ import { evaluateGuess, calculateScore } from './utils/gameLogic';
 import mockChallengeData from './data/mockChallenge.json';
 
 const initialChallenge: Challenge = mockChallengeData as Challenge;
+const ONBOARDING_STORAGE_KEY = 'taprobrick_has_seen_onboarding';
 
 export function App() {
   const [challenge] = useState<Challenge>(initialChallenge);
@@ -25,7 +26,22 @@ export function App() {
     hasEndedEarly: false,
   });
 
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem(ONBOARDING_STORAGE_KEY);
+    } catch {
+      return false;
+    }
+  });
+
+  const handleCloseHelp = () => {
+    try {
+      localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
+    } catch {
+      // Ignore in private/restricted storage environments
+    }
+    setIsHelpOpen(false);
+  };
 
   // Remaining unused attempts
   const remainingAttempts = gameState.maxAttempts - gameState.guesses.length;
@@ -147,7 +163,7 @@ export function App() {
 
       <HelpModal
         isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
+        onClose={handleCloseHelp}
       />
     </div>
   );
