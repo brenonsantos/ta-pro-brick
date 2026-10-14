@@ -54,25 +54,25 @@ export const GuessHistory: React.FC<GuessHistoryProps> = ({ guesses, maxAttempts
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5 sm:space-y-3">
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+        <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
           Seus Palpites ({guesses.length}/{maxAttempts})
         </h3>
-        <span className="text-[11px] text-zinc-500">Wordle dos Motores</span>
+        <span className="text-xs sm:text-sm text-zinc-500">Wordle dos Motores</span>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {slots.map((guess, index) => {
           if (!guess) {
             return (
               <div
                 key={`empty-${index}`}
-                className="flex items-center justify-between rounded-xl border border-dashed border-zinc-800/80 bg-zinc-950/40 px-3.5 py-2.5 text-xs text-zinc-600"
+                className="flex items-center justify-between rounded-xl sm:rounded-2xl border border-dashed border-zinc-800/80 bg-zinc-950/40 px-4 py-3 sm:py-3.5 text-xs sm:text-sm text-zinc-600"
               >
-                <span className="font-semibold text-zinc-700">#{index + 1}</span>
-                <span className="text-[11px] tracking-wide text-zinc-700">Aguardando palpite...</span>
-                <span className="h-4 w-4 rounded-full border border-zinc-800/80" />
+                <span className="font-bold text-zinc-700">#{index + 1}</span>
+                <span className="text-xs sm:text-sm tracking-wide text-zinc-700">Aguardando palpite...</span>
+                <span className="h-4 w-4 sm:h-5 sm:w-5 rounded-full border border-zinc-800/80" />
               </div>
             );
           }
@@ -82,38 +82,38 @@ export const GuessHistory: React.FC<GuessHistoryProps> = ({ guesses, maxAttempts
           return (
             <div
               key={`guess-${index}`}
-              className={`flex items-center justify-between rounded-xl border p-3 shadow-md transition-all animate-in fade-in-50 duration-300 ${style.bg}`}
+              className={`flex items-center justify-between rounded-xl sm:rounded-2xl border p-3.5 sm:p-4 shadow-md transition-all animate-in fade-in-50 duration-300 ${style.bg}`}
             >
-              <div className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black/40 text-xs font-bold text-zinc-300">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-black/40 text-xs sm:text-sm font-bold text-zinc-300">
                   {index + 1}
                 </span>
-                <span className="text-base font-extrabold tracking-tight text-white">
+                <span className="text-base sm:text-xl font-black tracking-tight text-white">
                   {formatBRL(guess.guessValue)}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Heat Band Badge */}
-                <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${style.badge}`}>
+                <span className={`rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-bold ${style.badge}`}>
                   {style.label}
                 </span>
 
                 {/* Direction Indicator */}
                 <div className="flex items-center">
                   {guess.direction === 'higher' && (
-                    <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-400">
-                      <ArrowUp className="h-4 w-4 stroke-[2.5]" /> Maior
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-400">
+                      <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Maior
                     </span>
                   )}
                   {guess.direction === 'lower' && (
-                    <span className="flex items-center gap-0.5 text-xs font-bold text-rose-400">
-                      <ArrowDown className="h-4 w-4 stroke-[2.5]" /> Menor
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-rose-400">
+                      <ArrowDown className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Menor
                     </span>
                   )}
                   {guess.direction === 'exact' && (
-                    <span className="flex items-center gap-0.5 text-xs font-bold text-purple-300">
-                      <Target className="h-4 w-4 stroke-[2.5]" /> Na Mosca
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-purple-300">
+                      <Target className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Na Mosca
                     </span>
                   )}
                 </div>

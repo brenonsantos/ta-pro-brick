@@ -42,9 +42,9 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) 
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-5">
       {/* Photo Stage */}
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl">
         <div className="relative aspect-[16/10] w-full bg-zinc-950 sm:aspect-[16/9]">
           {allPhotos.length > 0 ? (
             <img
@@ -59,13 +59,13 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) 
           )}
 
           {/* Photo Counter & Badge */}
-          <div className="absolute bottom-3 left-3 flex items-center gap-2">
-            <span className="rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
+          <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 flex items-center gap-2">
+            <span className="rounded-full bg-black/75 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md border border-white/10">
               📷 {activePhotoIndex + 1}/{allPhotos.length}
             </span>
             {isGalleryUnlocked && (
-              <span className="flex items-center gap-1 rounded-full bg-emerald-500/80 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md">
-                <Sparkles className="h-3 w-3" /> Mais fotos liberadas
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md shadow-md">
+                <Sparkles className="h-3.5 w-3.5" /> Mais fotos liberadas
               </span>
             )}
           </div>
@@ -75,56 +75,56 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) 
             <>
               <button
                 onClick={handlePrevPhoto}
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition"
+                className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Foto anterior"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
               <button
                 onClick={handleNextPhoto}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition"
+                className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Próxima foto"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
             </>
           )}
         </div>
 
         {/* Title Bar (Clue 1) */}
-        <div className="border-t border-zinc-800/80 bg-zinc-900/95 p-3.5">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+        <div className="border-t border-zinc-800/80 bg-zinc-900/95 p-4 sm:p-5">
+          <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
             Pista 1 • Anúncio
           </div>
-          <h2 className="mt-0.5 text-base font-bold text-zinc-100 sm:text-lg">
+          <h2 className="mt-1 text-base sm:text-xl font-extrabold text-zinc-100">
             {coverClue?.content.title || 'Carro Anunciado'}
           </h2>
         </div>
       </div>
 
       {/* Secondary Clues Cards Grid */}
-      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {/* Clue 3: Description */}
         <div
-          className={`relative rounded-xl border p-3.5 transition-all ${
+          className={`relative rounded-2xl border p-4 sm:p-5 transition-all ${
             isDescriptionUnlocked
               ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
               : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
           }`}
         >
-          <div className="flex items-center justify-between text-xs font-semibold">
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <FileText className="h-3.5 w-3.5 text-amber-400" /> Pista 3: Descrição
+          <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+            <span className="flex items-center gap-2 text-zinc-400">
+              <FileText className="h-4 w-4 text-amber-400" /> Pista 3: Descrição
             </span>
             {!isDescriptionUnlocked && (
-              <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                <Lock className="h-3 w-3" /> Palpite 3
+              <span className="flex items-center gap-1 text-xs text-zinc-500">
+                <Lock className="h-3.5 w-3.5" /> Palpite 3
               </span>
             )}
           </div>
-          <div className="mt-2 text-xs leading-relaxed">
+          <div className="mt-2.5 text-xs sm:text-sm leading-relaxed">
             {isDescriptionUnlocked ? (
-              <p className="line-clamp-4 italic text-zinc-300">
+              <p className="line-clamp-5 italic text-zinc-300">
                 "{descriptionClue?.content.description}"
               </p>
             ) : (
@@ -136,61 +136,61 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) 
         </div>
 
         {/* Clue 4 & 5: Location & Time */}
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {/* Location */}
           <div
-            className={`rounded-xl border p-3 transition-all ${
+            className={`rounded-2xl border p-4 transition-all ${
               isLocationUnlocked
                 ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
             }`}
           >
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="flex items-center gap-1.5 text-zinc-400">
-                <MapPin className="h-3.5 w-3.5 text-rose-400" /> Pista 4: Cidade
+            <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+              <span className="flex items-center gap-2 text-zinc-400">
+                <MapPin className="h-4 w-4 text-rose-400" /> Pista 4: Cidade
               </span>
               {!isLocationUnlocked && (
-                <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                  <Lock className="h-3 w-3" /> Palpite 4
+                <span className="flex items-center gap-1 text-xs text-zinc-500">
+                  <Lock className="h-3.5 w-3.5" /> Palpite 4
                 </span>
               )}
             </div>
-            <div className="mt-1 text-sm font-semibold">
+            <div className="mt-1.5 text-sm sm:text-base font-semibold">
               {isLocationUnlocked && locationClue?.content.location ? (
                 <span className="text-zinc-100">
                   📍 {locationClue.content.location.city} — {locationClue.content.location.state}
                 </span>
               ) : (
-                <span className="text-xs text-zinc-600">Cidade e estado bloqueados</span>
+                <span className="text-xs sm:text-sm text-zinc-600">Cidade e estado bloqueados</span>
               )}
             </div>
           </div>
 
           {/* Time on Market */}
           <div
-            className={`rounded-xl border p-3 transition-all ${
+            className={`rounded-2xl border p-4 transition-all ${
               isTimeUnlocked
                 ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
             }`}
           >
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="flex items-center gap-1.5 text-zinc-400">
-                <Clock className="h-3.5 w-3.5 text-sky-400" /> Pista 5: Tempo
+            <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+              <span className="flex items-center gap-2 text-zinc-400">
+                <Clock className="h-4 w-4 text-sky-400" /> Pista 5: Tempo
               </span>
               {!isTimeUnlocked && (
-                <span className="flex items-center gap-1 text-[11px] text-zinc-500">
-                  <Lock className="h-3 w-3" /> Palpite 5
+                <span className="flex items-center gap-1 text-xs text-zinc-500">
+                  <Lock className="h-3.5 w-3.5" /> Palpite 5
                 </span>
               )}
             </div>
-            <div className="mt-1 text-xs">
+            <div className="mt-1.5 text-xs sm:text-sm">
               {isTimeUnlocked && timeClue?.content.timeOnMarket ? (
-                <span className="font-medium text-zinc-200">
+                <span className="font-semibold text-zinc-200">
                   ⏱️ {timeClue.content.timeOnMarket}
                 </span>
               ) : (
-                <span className="text-zinc-600">Tempo de publicação bloqueado</span>
+                <span className="text-xs sm:text-sm text-zinc-600">Tempo de publicação bloqueado</span>
               )}
             </div>
           </div>

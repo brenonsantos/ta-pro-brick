@@ -47,17 +47,17 @@ export const GuessInput: React.FC<GuessInputProps> = ({
   };
 
   return (
-    <div className="rounded-2xl border border-zinc-800 bg-zinc-900/90 p-3.5 shadow-2xl backdrop-blur-md">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/90 p-4 sm:p-6 shadow-2xl backdrop-blur-md">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <label htmlFor="price-input" className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+          <label htmlFor="price-input" className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
             Quanto o vendedor pediu?
           </label>
           {numericValue > 0 && !disabled && (
             <button
               type="button"
               onClick={handleClear}
-              className="text-[11px] font-semibold text-zinc-500 hover:text-zinc-300 transition"
+              className="text-xs sm:text-sm font-semibold text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
             >
               Limpar
             </button>
@@ -74,7 +74,7 @@ export const GuessInput: React.FC<GuessInputProps> = ({
             onChange={handleInputChange}
             placeholder="R$ 0"
             disabled={disabled}
-            className={`w-full rounded-xl border bg-zinc-950 px-4 py-3.5 text-center text-2xl font-black tracking-tight text-white transition-all placeholder:text-zinc-700 focus:outline-none focus:ring-2 ${
+            className={`w-full rounded-xl sm:rounded-2xl border bg-zinc-950 px-4 py-3.5 sm:py-4 text-center text-2xl sm:text-3xl font-black tracking-tight text-white transition-all placeholder:text-zinc-700 focus:outline-none focus:ring-2 ${
               errorMsg
                 ? 'border-rose-500/80 focus:ring-rose-500/30'
                 : 'border-zinc-800 focus:border-amber-500 focus:ring-amber-500/20'
@@ -83,34 +83,34 @@ export const GuessInput: React.FC<GuessInputProps> = ({
         </div>
 
         {errorMsg && (
-          <p className="text-center text-xs font-semibold text-rose-400 animate-in fade-in-50">
+          <p className="text-center text-xs sm:text-sm font-semibold text-rose-400 animate-in fade-in-50">
             {errorMsg}
           </p>
         )}
 
-        {/* Quick mobile increment pills */}
+        {/* Quick increment pills */}
         {!disabled && (
-          <div className="flex items-center justify-center gap-1.5 pt-0.5">
+          <div className="flex items-center justify-center gap-2 pt-1">
             <button
               type="button"
               onClick={() => handleAddAmount(1000)}
-              className="flex items-center gap-0.5 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
             >
-              <Plus className="h-3 w-3 text-amber-400" /> 1 mil
+              <Plus className="h-3.5 w-3.5 text-amber-400" /> 1 mil
             </button>
             <button
               type="button"
               onClick={() => handleAddAmount(5000)}
-              className="flex items-center gap-0.5 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
             >
-              <Plus className="h-3 w-3 text-amber-400" /> 5 mil
+              <Plus className="h-3.5 w-3.5 text-amber-400" /> 5 mil
             </button>
             <button
               type="button"
               onClick={() => handleAddAmount(10000)}
-              className="flex items-center gap-0.5 rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs font-semibold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition"
+              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
             >
-              <Plus className="h-3 w-3 text-amber-400" /> 10 mil
+              <Plus className="h-3.5 w-3.5 text-amber-400" /> 10 mil
             </button>
           </div>
         )}
@@ -119,9 +119,9 @@ export const GuessInput: React.FC<GuessInputProps> = ({
         <button
           type="submit"
           disabled={disabled || numericValue <= 0}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm font-extrabold uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+          className="flex w-full items-center justify-center gap-2.5 rounded-xl sm:rounded-2xl bg-amber-500 py-3.5 sm:py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none cursor-pointer"
         >
-          <Send className="h-4 w-4 stroke-[2.5]" />
+          <Send className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" />
           Confirmar Palpite
         </button>
       </form>

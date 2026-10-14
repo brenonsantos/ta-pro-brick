@@ -65,25 +65,25 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md sm:max-w-xl overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-8 shadow-2xl">
         {/* Glow ambient background */}
         <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-amber-500/20 blur-3xl" />
 
         {/* Modal Header */}
         <div className="text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
-            {isWon ? <Trophy className="h-8 w-8" /> : <AlertTriangle className="h-8 w-8 text-rose-400" />}
+          <div className="mx-auto mb-3.5 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+            {isWon ? <Trophy className="h-9 w-9" /> : <AlertTriangle className="h-9 w-9 text-rose-400" />}
           </div>
 
-          <h2 className="text-2xl font-black tracking-tight text-white">
+          <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
             {isWonCanContinue
               ? 'Você Acertou o Preço! 🎯'
               : isWon
               ? 'Desafio Concluído! 🏆'
               : 'Fim de Jogo! 🏁'}
           </h2>
-          <p className="mt-1 text-xs text-zinc-400">
+          <p className="mt-1.5 text-xs sm:text-sm text-zinc-400">
             {isWonCanContinue
               ? 'Seu palpite entrou na margem de tolerância de vitória.'
               : isWon
@@ -93,17 +93,17 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         </div>
 
         {/* Score & Asking Price Panel */}
-        <div className="mt-5 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4 space-y-3">
+        <div className="mt-6 rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-5 space-y-3.5">
           {/* True Price (Revealed on completion) */}
           {isCompleted && (
-            <div className="border-b border-zinc-800 pb-3 text-center">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+            <div className="border-b border-zinc-800 pb-4 text-center">
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
                 Preço Pedido pelo Vendedor
               </span>
-              <div className="mt-0.5 text-2xl font-black text-amber-400">
+              <div className="mt-1 text-3xl sm:text-4xl font-black text-amber-400">
                 {formatBRL(gameState.challenge.askingPrice)}
               </div>
-              <div className="mt-1 text-xs text-zinc-400">
+              <div className="mt-1.5 text-xs sm:text-sm text-zinc-400">
                 Seu melhor palpite: <strong className="text-zinc-200">{formatBRL(scoreBreakdown.bestGuess?.guessValue ?? 0)}</strong>{' '}
                 (diferença de {formatBRL(scoreBreakdown.bestGuess?.absoluteDifference ?? 0)})
               </div>
@@ -111,7 +111,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           )}
 
           {/* Score details */}
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between text-xs sm:text-sm">
             <span className="text-zinc-400">Pontuação Base ({scoreBreakdown.tier || 'Precisão'}):</span>
             <span className="font-bold text-zinc-200">
               {scoreBreakdown.baseScore.toLocaleString('pt-BR')} pts
@@ -119,7 +119,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
           </div>
 
           {isWon && (
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs sm:text-sm">
               <span className="text-zinc-400">
                 Bônus de Tentativas ({remainingAttempts} restantes):
               </span>
@@ -129,9 +129,9 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             </div>
           )}
 
-          <div className="flex items-center justify-between border-t border-zinc-800 pt-2 text-sm font-extrabold">
+          <div className="flex items-center justify-between border-t border-zinc-800 pt-3 text-sm sm:text-base font-extrabold">
             <span className="text-white">Pontuação Total:</span>
-            <span className="text-base text-amber-400">
+            <span className="text-base sm:text-xl text-amber-400">
               {scoreBreakdown.totalScore.toLocaleString('pt-BR')} pts
             </span>
           </div>
@@ -139,24 +139,24 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
         {/* Action Choice: When Won and can continue */}
         {isWonCanContinue && (
-          <div className="mt-5 space-y-3">
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 text-[11px] text-zinc-300">
+          <div className="mt-6 space-y-3">
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 text-xs sm:text-sm text-zinc-300">
               <span className="font-bold text-amber-400">Dilema de Risco:</span> Você pode <strong>encerrar agora</strong> e garantir seus <strong>+{scoreBreakdown.bonusScore} pts</strong> de bônus, ou <strong>arriscar</strong> para tentar bater na mosca (1%) ou cravar o valor!
             </div>
 
             <button
               onClick={onEndRound}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3 text-sm font-bold uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-amber-500 py-3.5 sm:py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
             >
-              <Check className="h-4 w-4 stroke-[2.5]" />
+              <Check className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" />
               Encerrar Rodada e Salvar Pontos
             </button>
 
             <button
               onClick={onContinuePlaying}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-xs font-semibold text-zinc-300 hover:bg-zinc-800 transition"
+              className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-zinc-700 bg-zinc-900 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-zinc-300 hover:bg-zinc-800 transition cursor-pointer"
             >
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               Arriscar Mais Palpites ({remainingAttempts} restantes)
             </button>
           </div>
@@ -164,19 +164,19 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
         {/* Action Choice: When Round is Completed */}
         {isCompleted && (
-          <div className="mt-5 space-y-2.5">
+          <div className="mt-6 space-y-3">
             <button
               onClick={handleShare}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm font-extrabold uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98]"
+              className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-amber-500 py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
             >
               {copied ? (
                 <>
-                  <Check className="h-4 w-4 stroke-[2.5] text-emerald-950" />
+                  <Check className="h-5 w-5 stroke-[2.5] text-emerald-950" />
                   Resultado Copiado!
                 </>
               ) : (
                 <>
-                  <Share2 className="h-4 w-4 stroke-[2.5]" />
+                  <Share2 className="h-5 w-5 stroke-[2.5]" />
                   Compartilhar Resultado
                 </>
               )}
@@ -187,18 +187,18 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 href={gameState.challenge.originalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 text-xs font-semibold text-zinc-400 hover:text-zinc-200 transition"
+                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 py-3 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition"
               >
-                <ExternalLink className="h-3.5 w-3.5" />
+                <ExternalLink className="h-4 w-4" />
                 Ver Anúncio Original Simulado
               </a>
             )}
 
             <button
               onClick={onRestartPrototype}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-zinc-800 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 transition"
+              className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-dashed border-zinc-800 py-2.5 text-xs sm:text-sm font-medium text-zinc-500 hover:text-zinc-300 hover:border-zinc-700 transition cursor-pointer"
             >
-              <RotateCcw className="h-3.5 w-3.5" />
+              <RotateCcw className="h-4 w-4" />
               Reiniciar Protótipo para Novo Teste
             </button>
           </div>

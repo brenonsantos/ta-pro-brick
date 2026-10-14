@@ -127,7 +127,7 @@ export function App() {
         onOpenHelp={() => setIsHelpOpen(true)}
       />
 
-      <main className="flex-1 w-full max-w-xl mx-auto px-4 py-5 space-y-6">
+      <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Clues Stage */}
         <ClueViewer
           clues={challenge.clues}
