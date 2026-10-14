@@ -205,10 +205,10 @@
   },
   {
     "id": "challenge-004",
-    "shortName": "Opala 4.1 1988",
-    "title": "Chevrolet Opala Comodoro 4.1/S 1988 — 6 Cilindros de Plaquetada",
-    "askingPrice": 78000,
-    "originalUrl": "https://exemplo-anuncio.com.br/opala-comodoro-1988",
+    "shortName": "Fiat 147/Tipo",
+    "title": "1999 FIAT 147 (Tipo Vermelho)",
+    "askingPrice": 2400,
+    "originalUrl": "https://www.facebook.com/marketplace/item/1433578795573957",
     "clues": [
       {
         "id": 1,
@@ -216,8 +216,8 @@
         "label": "Título e Foto de Capa",
         "type": "title_and_cover",
         "content": {
-          "title": "Chevrolet Opala Comodoro 4.1 1988 Preto Nobre",
-          "coverImageUrl": "https://images.unsplash.com/photo-1526726538690-5cbf956ae2fd?auto=format&fit=crop&w=1000&q=80"
+          "title": "1999 FIAT 147 (Tipo Vermelho)",
+          "coverImageUrl": "/cars/fiat-tipo-1999/1.jpg"
         }
       },
       {
@@ -227,9 +227,13 @@
         "type": "gallery",
         "content": {
           "images": [
-            "https://images.unsplash.com/photo-1526726538690-5cbf956ae2fd?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80"
+            "/cars/fiat-tipo-1999/1.jpg",
+            "/cars/fiat-tipo-1999/2.jpg",
+            "/cars/fiat-tipo-1999/3.jpg",
+            "/cars/fiat-tipo-1999/4.jpg",
+            "/cars/fiat-tipo-1999/5.jpg",
+            "/cars/fiat-tipo-1999/6.jpg",
+            "/cars/fiat-tipo-1999/7.jpg"
           ]
         }
       },
@@ -239,7 +243,7 @@
         "label": "Descrição do Anunciante",
         "type": "description",
         "content": {
-          "description": "Opala Comodoro SL/E 1988 motor 4.1 / 250-S 6 cilindros a álcool original de chassi (plaqueta 5R). Câmbio Clark 4 marchas com ré pra frente. Tapeçaria navalhada original de fábrica impecável. Direção hidráulica, vidros elétricos e retrovisores elétricos funcionando perfeitamente. Rodas Ralinho aro 14 com pneus Hankook novos letras brancas. Estrutura íntegra de longarinas e caixas de ar. Colecionador."
+          "description": "Carro Fiat tipo o carro está rodando normal documento é tumulto para lá ✍️ carro para quem quer só rodar tudo está explicado aqui não respondo perguntas desnecessárias pego de tudo na catira vem nele dinheiro e catira\n\nSobre esse veículo:\n• 118.888 km rodados\n• Câmbio manual\n• Cor externa: Red\n• Documento: tumulto / só para rodar"
         }
       },
       {
@@ -249,8 +253,8 @@
         "type": "location",
         "content": {
           "location": {
-            "city": "Joinville",
-            "state": "SC"
+            "city": "Santa Luzia",
+            "state": "MG"
           }
         }
       },
@@ -260,7 +264,7 @@
         "label": "Tempo de Publicação",
         "type": "time",
         "content": {
-          "timeOnMarket": "Publicado há 2 semanas • 310 visualizações"
+          "timeOnMarket": "Anunciado há 11 horas em Santa Luzia, MG"
         }
       }
     ]
