@@ -19,7 +19,7 @@ export const VehicleSelector: React.FC<VehicleSelectorProps> = ({
     <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-3 sm:p-4">
       <div className="flex items-center justify-between mb-2 px-1">
         <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">
-          Carros de Teste ({challenges.findIndex((c) => c.id === activeChallengeId) + 1} de {challenges.length})
+          Anúncios de Teste ({challenges.findIndex((c) => c.id === activeChallengeId) + 1} de {challenges.length})
         </span>
         <span className="text-[11px] sm:text-xs text-amber-400/90 font-medium">
           Protótipo Multicarros

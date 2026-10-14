@@ -175,7 +175,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-amber-500 py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
               >
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                Jogar Próximo Carro de Teste 🚗
+                Jogar Próximo Desafio 🚗
               </button>
             )}
 

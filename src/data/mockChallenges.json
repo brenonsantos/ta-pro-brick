@@ -271,10 +271,10 @@
   },
   {
     "id": "challenge-005",
-    "shortName": "Fusca Itamar 1994",
-    "title": "VW Fusca 1600 Itamar 1994 — 12.000 km originais de coleção",
-    "askingPrice": 95000,
-    "originalUrl": "https://exemplo-anuncio.com.br/fusca-itamar-1994",
+    "shortName": "Rodas F1000",
+    "title": "Rodas F1000 aro 16",
+    "askingPrice": 1000,
+    "originalUrl": "https://www.facebook.com/marketplace/item/1779018580094626",
     "clues": [
       {
         "id": 1,
@@ -282,8 +282,8 @@
         "label": "Título e Foto de Capa",
         "type": "title_and_cover",
         "content": {
-          "title": "VW Fusca Itamar 1994 Branco Star Único Dono",
-          "coverImageUrl": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"
+          "title": "Rodas F1000 aro 16",
+          "coverImageUrl": "/cars/rodas-f1000-aro-16/1.jpg"
         }
       },
       {
@@ -293,9 +293,8 @@
         "type": "gallery",
         "content": {
           "images": [
-            "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80",
-            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"
+            "/cars/rodas-f1000-aro-16/1.jpg",
+            "/cars/rodas-f1000-aro-16/2.jpg"
           ]
         }
       },
@@ -305,7 +304,7 @@
         "label": "Descrição do Anunciante",
         "type": "description",
         "content": {
-          "description": "Raridade absoluta para colecionadores exigentes. Fusca Série Ouro / Itamar 1994 com inacreditáveis 12.400 km originais comprovados. Todos os manuais, chave cópia, nota fiscal de compra da concessionária e estepe original de fábrica sem uso com pelos na borracha. Plásticos originais no quebra-sol e carpetes de fábrica. Quem conhece sabe o valor histórico, dispenso curiosos e ofertas de revendedores. O valor é o anunciado, não tenho pressa de vender."
+          "description": "Jogo de roda que estava sendo usado normalmente em uma f100 que comprei para desmontar. Mas e um jogo de rodas velho com pneus ruins. Já está aparecendo ferrugem na emenda central. Mas ainda dá para salvar.\n\nDetalhes:\n• Condição: Usado — em condições razoáveis\n• Aplicação / Medida: Aro 16 (Ford F-1000 / F-100)"
         }
       },
       {
@@ -315,8 +314,8 @@
         "type": "location",
         "content": {
           "location": {
-            "city": "Campinas",
-            "state": "SP"
+            "city": "Curitiba",
+            "state": "PR"
           }
         }
       },
@@ -326,7 +325,7 @@
         "label": "Tempo de Publicação",
         "type": "time",
         "content": {
-          "timeOnMarket": "Publicado há 1 mês • 1.150 visualizações"
+          "timeOnMarket": "Anunciado há 2 dias em Curitiba, PR"
         }
       }
     ]
