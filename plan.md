@@ -9,11 +9,11 @@ Expand the single-round prototype into a 5-car interactive showcase featuring di
 
 ### 1. Multi-Vehicle Mock Dataset
 - [x] Create `src/data/mockChallenges.json` containing 5 detailed vehicle listings:
-  1. **VW Gol GTS 1.8 1993 (R$ 48.900):** Iconic 90s hot hatch.
-  2. **Fiat Uno Mille Fire 2002 (R$ 13.500):** Budget workhorse (tests the R$ 1,000 minimum floor margin).
-  3. **BMW 320i M Sport 2021 (R$ 219.000):** Modern premium sedan (tests higher absolute tolerance).
-  4. **Chevrolet Opala Comodoro 4.1 1988 (R$ 78.000):** Classic Brazilian 6-cylinder.
-  5. **VW Fusca Itamar 1994 (R$ 95.000):** Overpriced collector novelty ("relíquia de garagem").
+  1. **VW Gol GTS 1.8 1988 (R$ 44.900):** Anúncio real OLX (8 fotos locais) — hot hatch clássico.
+  2. **Jeep Renegade Longitude 2023 (R$ 91.990):** Anúncio real Facebook Marketplace (13 fotos locais) — SUV moderno flex aut.
+  3. **BMW 320i M Sport 2021 (R$ 219.000):** Sedã premium moderno (testa tolerâncias maiores).
+  4. **Chevrolet Opala Comodoro 4.1 1988 (R$ 78.000):** Clássico 6 cilindros nacional.
+  5. **VW Fusca Itamar 1994 (R$ 95.000):** Relíquia de garagem com valor inflacionado.
 
 ### 2. Vehicle Selector & Round Flow in UI
 - [x] Add responsive vehicle selector navigation in `src/components/VehicleSelector.tsx` (quick switcher tabs: "1. Gol GTS", "2. Uno", "3. BMW", "4. Opala", "5. Fusca") with completed indicators.
