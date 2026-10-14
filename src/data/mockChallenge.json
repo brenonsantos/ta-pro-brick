@@ -1,0 +1,62 @@
+{
+  "id": "challenge-001",
+  "title": "VW Gol GTS 1.8 1993 Álcool — Painel Satélite e Recaro",
+  "askingPrice": 48900,
+  "originalUrl": "https://exemplo-anuncio.com.br/vw-gol-gts-1993",
+  "clues": [
+    {
+      "id": 1,
+      "attemptNumber": 1,
+      "label": "Título e Foto de Capa",
+      "type": "title_and_cover",
+      "content": {
+        "title": "VW Gol GTS 1.8 1993 Álcool",
+        "coverImageUrl": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"
+      }
+    },
+    {
+      "id": 2,
+      "attemptNumber": 2,
+      "label": "Galeria de Fotos",
+      "type": "gallery",
+      "content": {
+        "images": [
+          "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80",
+          "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80",
+          "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1000&q=80",
+          "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1000&q=80"
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "attemptNumber": 3,
+      "label": "Descrição do Anunciante",
+      "type": "description",
+      "content": {
+        "description": "Gol GTS 1993/1993 com motor AP 1.8 a álcool cadastrado. Bancos Recaro originais sem rasgos, painel satélite funcionando 100%, rádio VolksLine de época. Rodas pingo d'água aro 14 com 4 pneus novos. Túnel e longarinas impecáveis, sem trincas nem soldas. Faróis e milhas Arteb originais. Carro de garagem para colecionador exigente. Apto para placa preta. Não aceito trocas nem propostas absurdas."
+      }
+    },
+    {
+      "id": 4,
+      "attemptNumber": 4,
+      "label": "Localização",
+      "type": "location",
+      "content": {
+        "location": {
+          "city": "Curitiba",
+          "state": "PR"
+        }
+      }
+    },
+    {
+      "id": 5,
+      "attemptNumber": 5,
+      "label": "Tempo de Publicação",
+      "type": "time",
+      "content": {
+        "timeOnMarket": "Publicado há 3 dias • 142 visualizações"
+      }
+    }
+  ]
+}
