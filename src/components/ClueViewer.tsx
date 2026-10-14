@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import { ClueItem } from '../types/game';
-import { Camera, FileText, MapPin, Clock, Lock, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, FileText, MapPin, Clock, Lock, Sparkles, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 
 interface ClueViewerProps {
   clues: ClueItem[];
   unlockedCount: number; // 1 to 5
+  isCompleted?: boolean;
+  originalUrl?: string;
 }
 
-export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) => {
+export const ClueViewer: React.FC<ClueViewerProps> = ({
+  clues,
+  unlockedCount,
+  isCompleted,
+  originalUrl,
+}) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
 
   // Collect all currently unlocked photos
@@ -93,8 +100,20 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({ clues, unlockedCount }) 
 
         {/* Title Bar (Clue 1) */}
         <div className="border-t border-zinc-800/80 bg-zinc-900/95 p-4 sm:p-5">
-          <div className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
-            Pista 1 • Anúncio
+          <div className="flex items-center justify-between">
+            <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
+              Pista 1 • Anúncio
+            </span>
+            {isCompleted && originalUrl && (
+              <a
+                href={originalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition cursor-pointer"
+              >
+                Abrir Anúncio na Web <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
+              </a>
+            )}
           </div>
           <h2 className="mt-1 text-base sm:text-xl font-extrabold text-zinc-100">
             {coverClue?.content.title || 'Carro Anunciado'}

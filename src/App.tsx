@@ -173,6 +173,8 @@ export function App() {
         <ClueViewer
           clues={activeChallenge.clues}
           unlockedCount={unlockedCluesCount}
+          isCompleted={currentGameState.status === 'completed'}
+          originalUrl={activeChallenge.originalUrl}
         />
 
         {/* Input Bar */}

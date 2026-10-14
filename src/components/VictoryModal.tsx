@@ -205,10 +205,10 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 href={gameState.challenge.originalUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-zinc-800 bg-zinc-900/60 py-3 text-xs sm:text-sm font-semibold text-zinc-400 hover:text-zinc-200 transition"
+                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl border border-amber-500/30 bg-amber-500/10 py-3.5 text-xs sm:text-sm font-bold text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/50 transition cursor-pointer"
               >
-                <ExternalLink className="h-4 w-4" />
-                Ver Anúncio Original Simulado
+                <ExternalLink className="h-4 w-4 text-amber-400" />
+                Ver Anúncio Original na Web ↗
               </a>
             )}
 
