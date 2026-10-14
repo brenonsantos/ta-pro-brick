@@ -27,6 +27,7 @@ export interface ClueItem {
 export interface Challenge {
   id: string;
   title: string;
+  shortName?: string;
   askingPrice: number;
   clues: ClueItem[];
   originalUrl?: string;

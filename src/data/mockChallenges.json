@@ -1,0 +1,314 @@
+[
+  {
+    "id": "challenge-001",
+    "shortName": "Gol GTS 1993",
+    "title": "VW Gol GTS 1.8 1993 Álcool — Painel Satélite e Recaro",
+    "askingPrice": 48900,
+    "originalUrl": "https://exemplo-anuncio.com.br/vw-gol-gts-1993",
+    "clues": [
+      {
+        "id": 1,
+        "attemptNumber": 1,
+        "label": "Título e Foto de Capa",
+        "type": "title_and_cover",
+        "content": {
+          "title": "VW Gol GTS 1.8 1993 Álcool",
+          "coverImageUrl": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80"
+        }
+      },
+      {
+        "id": 2,
+        "attemptNumber": 2,
+        "label": "Galeria de Fotos",
+        "type": "gallery",
+        "content": {
+          "images": [
+            "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1000&q=80"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "attemptNumber": 3,
+        "label": "Descrição do Anunciante",
+        "type": "description",
+        "content": {
+          "description": "Gol GTS 1993/1993 com motor AP 1.8 a álcool cadastrado. Bancos Recaro originais sem rasgos, painel satélite funcionando 100%, rádio VolksLine de época. Rodas pingo d'água aro 14 com 4 pneus novos. Túnel e longarinas impecáveis, sem trincas nem soldas. Faróis e milhas Arteb originais. Carro de garagem para colecionador exigente. Apto para placa preta. Não aceito trocas nem propostas absurdas."
+        }
+      },
+      {
+        "id": 4,
+        "attemptNumber": 4,
+        "label": "Localização",
+        "type": "location",
+        "content": {
+          "location": {
+            "city": "Curitiba",
+            "state": "PR"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "attemptNumber": 5,
+        "label": "Tempo de Publicação",
+        "type": "time",
+        "content": {
+          "timeOnMarket": "Publicado há 3 dias • 142 visualizações"
+        }
+      }
+    ]
+  },
+  {
+    "id": "challenge-002",
+    "shortName": "Uno Mille 2002",
+    "title": "Fiat Uno Mille Fire 1.0 2002 — Básico, 2 portas, econômico",
+    "askingPrice": 13500,
+    "originalUrl": "https://exemplo-anuncio.com.br/fiat-uno-mille-2002",
+    "clues": [
+      {
+        "id": 1,
+        "attemptNumber": 1,
+        "label": "Título e Foto de Capa",
+        "type": "title_and_cover",
+        "content": {
+          "title": "Fiat Uno Mille Fire 2002 2 Portas",
+          "coverImageUrl": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80"
+        }
+      },
+      {
+        "id": 2,
+        "attemptNumber": 2,
+        "label": "Galeria de Fotos",
+        "type": "gallery",
+        "content": {
+          "images": [
+            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "attemptNumber": 3,
+        "label": "Descrição do Anunciante",
+        "type": "description",
+        "content": {
+          "description": "Uno Mille Fire 2002/2002, motor Fire 1.0 8v super econômico fazendo 14 km/l na cidade. Pneus bons, suspensão revisada mês passado, sem vazamentos de óleo. Tem detalhes de pintura e pequenos riscos de uso, afinal é um carro de 20 anos para o dia a dia. Interior limpo, estofamento original. Documentação 2024 toda paga em meu nome, só transferir."
+        }
+      },
+      {
+        "id": 4,
+        "attemptNumber": 4,
+        "label": "Localização",
+        "type": "location",
+        "content": {
+          "location": {
+            "city": "Betim",
+            "state": "MG"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "attemptNumber": 5,
+        "label": "Tempo de Publicação",
+        "type": "time",
+        "content": {
+          "timeOnMarket": "Publicado há 1 dia • 89 visualizações"
+        }
+      }
+    ]
+  },
+  {
+    "id": "challenge-003",
+    "shortName": "BMW 320i 2021",
+    "title": "BMW 320i M Sport 2.0 Turbo 2021 — Teto solar e revisões na concessionária",
+    "askingPrice": 219000,
+    "originalUrl": "https://exemplo-anuncio.com.br/bmw-320i-2021",
+    "clues": [
+      {
+        "id": 1,
+        "attemptNumber": 1,
+        "label": "Título e Foto de Capa",
+        "type": "title_and_cover",
+        "content": {
+          "title": "BMW 320i M Sport 2021 Cinza Dravit",
+          "coverImageUrl": "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80"
+        }
+      },
+      {
+        "id": 2,
+        "attemptNumber": 2,
+        "label": "Galeria de Fotos",
+        "type": "gallery",
+        "content": {
+          "images": [
+            "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1000&q=80"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "attemptNumber": 3,
+        "label": "Descrição do Anunciante",
+        "type": "description",
+        "content": {
+          "description": "BMW 320i ActiveFlex M Sport 2021/2021 na clássica cor Cinza Dravit com interior em couro Cognac. Pacote M Sport original de fábrica (rodas 19, para-choques M, volante M e suspensão esportiva). Apenas 34.000 km rodados, todas as revisões feitas rigorosamente na concessionária Eurobike. PPF frontal instalado desde zero km. Sem retoques de pintura, laudo cautelar 100% aprovado. Veículo de não fumante."
+        }
+      },
+      {
+        "id": 4,
+        "attemptNumber": 4,
+        "label": "Localização",
+        "type": "location",
+        "content": {
+          "location": {
+            "city": "São Paulo",
+            "state": "SP"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "attemptNumber": 5,
+        "label": "Tempo de Publicação",
+        "type": "time",
+        "content": {
+          "timeOnMarket": "Publicado há 6 dias • 420 visualizações"
+        }
+      }
+    ]
+  },
+  {
+    "id": "challenge-004",
+    "shortName": "Opala 4.1 1988",
+    "title": "Chevrolet Opala Comodoro 4.1/S 1988 — 6 Cilindros de Plaquetada",
+    "askingPrice": 78000,
+    "originalUrl": "https://exemplo-anuncio.com.br/opala-comodoro-1988",
+    "clues": [
+      {
+        "id": 1,
+        "attemptNumber": 1,
+        "label": "Título e Foto de Capa",
+        "type": "title_and_cover",
+        "content": {
+          "title": "Chevrolet Opala Comodoro 4.1 1988 Preto Nobre",
+          "coverImageUrl": "https://images.unsplash.com/photo-1526726538690-5cbf956ae2fd?auto=format&fit=crop&w=1000&q=80"
+        }
+      },
+      {
+        "id": 2,
+        "attemptNumber": 2,
+        "label": "Galeria de Fotos",
+        "type": "gallery",
+        "content": {
+          "images": [
+            "https://images.unsplash.com/photo-1526726538690-5cbf956ae2fd?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1000&q=80"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "attemptNumber": 3,
+        "label": "Descrição do Anunciante",
+        "type": "description",
+        "content": {
+          "description": "Opala Comodoro SL/E 1988 motor 4.1 / 250-S 6 cilindros a álcool original de chassi (plaqueta 5R). Câmbio Clark 4 marchas com ré pra frente. Tapeçaria navalhada original de fábrica impecável. Direção hidráulica, vidros elétricos e retrovisores elétricos funcionando perfeitamente. Rodas Ralinho aro 14 com pneus Hankook novos letras brancas. Estrutura íntegra de longarinas e caixas de ar. Colecionador."
+        }
+      },
+      {
+        "id": 4,
+        "attemptNumber": 4,
+        "label": "Localização",
+        "type": "location",
+        "content": {
+          "location": {
+            "city": "Joinville",
+            "state": "SC"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "attemptNumber": 5,
+        "label": "Tempo de Publicação",
+        "type": "time",
+        "content": {
+          "timeOnMarket": "Publicado há 2 semanas • 310 visualizações"
+        }
+      }
+    ]
+  },
+  {
+    "id": "challenge-005",
+    "shortName": "Fusca Itamar 1994",
+    "title": "VW Fusca 1600 Itamar 1994 — 12.000 km originais de coleção",
+    "askingPrice": 95000,
+    "originalUrl": "https://exemplo-anuncio.com.br/fusca-itamar-1994",
+    "clues": [
+      {
+        "id": 1,
+        "attemptNumber": 1,
+        "label": "Título e Foto de Capa",
+        "type": "title_and_cover",
+        "content": {
+          "title": "VW Fusca Itamar 1994 Branco Star Único Dono",
+          "coverImageUrl": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80"
+        }
+      },
+      {
+        "id": 2,
+        "attemptNumber": 2,
+        "label": "Galeria de Fotos",
+        "type": "gallery",
+        "content": {
+          "images": [
+            "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1000&q=80",
+            "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=1000&q=80"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "attemptNumber": 3,
+        "label": "Descrição do Anunciante",
+        "type": "description",
+        "content": {
+          "description": "Raridade absoluta para colecionadores exigentes. Fusca Série Ouro / Itamar 1994 com inacreditáveis 12.400 km originais comprovados. Todos os manuais, chave cópia, nota fiscal de compra da concessionária e estepe original de fábrica sem uso com pelos na borracha. Plásticos originais no quebra-sol e carpetes de fábrica. Quem conhece sabe o valor histórico, dispenso curiosos e ofertas de revendedores. O valor é o anunciado, não tenho pressa de vender."
+        }
+      },
+      {
+        "id": 4,
+        "attemptNumber": 4,
+        "label": "Localização",
+        "type": "location",
+        "content": {
+          "location": {
+            "city": "Campinas",
+            "state": "SP"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "attemptNumber": 5,
+        "label": "Tempo de Publicação",
+        "type": "time",
+        "content": {
+          "timeOnMarket": "Publicado há 1 mês • 1.150 visualizações"
+        }
+      }
+    ]
+  }
+]

@@ -1,24 +1,28 @@
-# Pull Request: Milestone 1 — Core Gameplay Playable Prototype
+# Pull Request: Milestone 2 — Multi-Car Prototype & Gameplay Validation
 
 ## Summary of Changes
-Implements the first interactive, mobile-first playable prototype for **Tá pro Brick**, establishing the core round loop:
-- **Project Foundation:** Scaffolding with Vite, React 19, TypeScript, Tailwind CSS, Lucide icons, Canvas Confetti, and Vitest.
-- **Rules Configuration Module (`src/config/gameConfig.ts`):** Isolates all numeric parameters (±5% win margin with R$ 1,000 floor, ±1% bullseye, R$ 1 exact tier, heat band thresholds, base points, and unused attempt bonuses).
-- **Core Business Logic (`src/utils/gameLogic.ts`):** Pure functions for guess evaluation, directional feedback (▲/▼), heat band classification, and score calculation with 12 comprehensive unit tests.
-- **Progressive Clues (`src/components/ClueViewer.tsx`):** Unlocks 5 clue tiers across attempts (Title & Cover -> Photo Gallery -> Seller Description -> Location -> Market Time). Attempt 6 serves as the final guess without new clues.
-- **Mobile Guess Input & History (`src/components/GuessInput.tsx`, `src/components/GuessHistory.tsx`):** Currency masked input in BRL (`R$`), mobile quick-increment buttons (+1k, +5k, +10k), and Wordle-style color cards.
-- **Victory & Score Dilemma (`src/components/VictoryModal.tsx`):** Interactive choice to stop and bank the unused attempt bonus (+500 pts per attempt) or spend attempts to aim for Bullseye / Exact.
-- **Spoiler-Free Sharing (`src/utils/shareText.ts`):** Generates copyable summaries using emojis without leaking the secret price.
+Expands the playable prototype from a single vehicle into a multi-car testing suite with 5 distinct vehicles, validating game balance, tolerances, and scoring across widely differing market price tiers:
+
+- **5 Diverse Vehicle Challenges (`src/data/mockChallenges.json`):**
+  1. **VW Gol GTS 1.8 1993 (R$ 48.900):** Iconic 90s hot hatch.
+  2. **Fiat Uno Mille Fire 2002 (R$ 13.500):** Budget daily driver (validates the R$ 1,000 floor tolerance).
+  3. **BMW 320i M Sport 2021 (R$ 219.000):** Modern premium sedan (validates 5% = ~R$ 11,000 absolute margin).
+  4. **Chevrolet Opala Comodoro 4.1 1988 (R$ 78.000):** Classic Brazilian 6-cylinder collector car.
+  5. **VW Fusca Itamar 1994 (R$ 95.000):** Overpriced collector novelty ("relíquia de garagem") to test market humor.
+- **Vehicle Selector Navigation (`src/components/VehicleSelector.tsx`):**
+  - Horizontal quick-switcher bar showing car names and completion checkmarks.
+  - Independent round state preservation across switching between cars.
+- **Round Advancement Flow (`src/components/VictoryModal.tsx`):**
+  - Added "Jogar Próximo Carro de Teste 🚗" button upon round completion to cycle through the challenges.
+- **Deployment Configuration (`vercel.json`):**
+  - Added static routing and SPA rewrite configuration for instant one-click hosting on Vercel or similar platforms.
 
 ## Verification
 - Unit Tests: 12 passing in Vitest (`npm test`).
 - Production Build: Clean TypeScript compilation and Vite build with zero warnings (`npm run build`).
 
 ## Manual Testing Instructions
-1. Run `npm run dev` and open the local URL in a browser (or mobile viewport).
-2. Clue 1 (Title + Cover Photo) should be immediately visible.
-3. Submit a guess below the actual price (e.g. `R$ 30.000`):
-   - Verify indicator shows `▲ Maior` and heat band is blue/yellow.
-   - Verify Clue 2 (Photo Gallery) unlocks with carousel navigation.
-4. Submit subsequent guesses and check progressive unlocking of Description, Location, and Time.
-5. Guess near `R$ 48.900` (e.g. `R$ 49.000`) to test the Victory modal, score breakdown, and share button.
+1. Open http://localhost:5173/ in browser.
+2. Observe the top vehicle bar with all 5 cars.
+3. Switch between cars (e.g. from Gol GTS to Uno Mille) and verify clues, photos, and state adapt dynamically.
+4. Play through a car, finish the round, and use "Jogar Próximo Carro de Teste" to verify sequential progression.

@@ -12,6 +12,8 @@ interface VictoryModalProps {
   onContinuePlaying: () => void;
   onEndRound: () => void;
   onRestartPrototype: () => void;
+  onNextChallenge?: () => void;
+  hasNextChallenge?: boolean;
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
@@ -20,6 +22,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onContinuePlaying,
   onEndRound,
   onRestartPrototype,
+  onNextChallenge,
+  hasNextChallenge,
 }) => {
   const [copied, setCopied] = useState(false);
   const isWon = scoreBreakdown.bestGuess?.isWin ?? false;
@@ -165,9 +169,23 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         {/* Action Choice: When Round is Completed */}
         {isCompleted && (
           <div className="mt-6 space-y-3">
+            {hasNextChallenge && onNextChallenge && (
+              <button
+                onClick={onNextChallenge}
+                className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-amber-500 py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
+              >
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                Jogar Próximo Carro de Teste 🚗
+              </button>
+            )}
+
             <button
               onClick={handleShare}
-              className="flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl bg-amber-500 py-4 text-sm sm:text-base font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
+              className={`flex w-full items-center justify-center gap-2 rounded-xl sm:rounded-2xl py-3.5 sm:py-4 text-sm sm:text-base font-black uppercase tracking-wide transition active:scale-[0.98] cursor-pointer ${
+                hasNextChallenge
+                  ? 'border border-zinc-700 bg-zinc-900 text-white hover:bg-zinc-800'
+                  : 'bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400'
+              }`}
             >
               {copied ? (
                 <>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Header } from './components/Header';
+import { VehicleSelector } from './components/VehicleSelector';
 import { ClueViewer } from './components/ClueViewer';
 import { GuessHistory } from './components/GuessHistory';
 import { GuessInput } from './components/GuessInput';
@@ -9,21 +10,31 @@ import { HelpModal } from './components/HelpModal';
 import { Challenge, GameState, RoundStatus } from './types/game';
 import { GAME_CONFIG } from './config/gameConfig';
 import { evaluateGuess, calculateScore } from './utils/gameLogic';
-import mockChallengeData from './data/mockChallenge.json';
+import mockChallengesData from './data/mockChallenges.json';
 
-const initialChallenge: Challenge = mockChallengeData as Challenge;
+const challenges: Challenge[] = mockChallengesData as Challenge[];
 const ONBOARDING_STORAGE_KEY = 'taprobrick_has_seen_onboarding';
 
-export function App() {
-  const [challenge] = useState<Challenge>(initialChallenge);
-  const [gameState, setGameState] = useState<GameState>({
-    challenge: initialChallenge,
+function createInitialGameState(challenge: Challenge): GameState {
+  return {
+    challenge,
     guesses: [],
     maxAttempts: GAME_CONFIG.maxAttempts,
     status: 'in_progress',
     bestGuess: null,
     totalScore: 0,
     hasEndedEarly: false,
+  };
+}
+
+export function App() {
+  const [activeChallengeIndex, setActiveChallengeIndex] = useState<number>(0);
+  const [gameStates, setGameStates] = useState<Record<string, GameState>>(() => {
+    const initial: Record<string, GameState> = {};
+    challenges.forEach((c) => {
+      initial[c.id] = createInitialGameState(c);
+    });
+    return initial;
   });
 
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(() => {
@@ -34,103 +45,133 @@ export function App() {
     }
   });
 
+  const activeChallenge = challenges[activeChallengeIndex] || challenges[0];
+  const currentGameState = gameStates[activeChallenge.id] || createInitialGameState(activeChallenge);
+
   const handleCloseHelp = () => {
     try {
       localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
     } catch {
-      // Ignore in private/restricted storage environments
+      // Ignore in private storage environments
     }
     setIsHelpOpen(false);
   };
 
   // Remaining unused attempts
-  const remainingAttempts = gameState.maxAttempts - gameState.guesses.length;
+  const remainingAttempts = currentGameState.maxAttempts - currentGameState.guesses.length;
 
   // Clues unlocked: starts at 1, increases with each guess up to 5
-  const unlockedCluesCount = Math.min(5, gameState.guesses.length + 1);
+  const unlockedCluesCount = Math.min(5, currentGameState.guesses.length + 1);
 
   // Current score breakdown
   const scoreBreakdown = calculateScore(
-    gameState.guesses,
+    currentGameState.guesses,
     remainingAttempts,
     GAME_CONFIG
   );
 
   const handleConfirmGuess = (guessValue: number) => {
-    if (gameState.status === 'completed') return;
+    if (currentGameState.status === 'completed') return;
 
-    const evaluation = evaluateGuess(guessValue, challenge.askingPrice, GAME_CONFIG);
-    const updatedGuesses = [...gameState.guesses, evaluation];
-    const newRemainingAttempts = gameState.maxAttempts - updatedGuesses.length;
+    const evaluation = evaluateGuess(guessValue, activeChallenge.askingPrice, GAME_CONFIG);
+    const updatedGuesses = [...currentGameState.guesses, evaluation];
+    const newRemainingAttempts = currentGameState.maxAttempts - updatedGuesses.length;
 
     let nextStatus: RoundStatus = 'in_progress';
 
     if (evaluation.heatBand === 'exact') {
-      // Exact hit: immediately completed with highest honors!
       nextStatus = 'completed';
     } else if (evaluation.isWin && newRemainingAttempts > 0) {
-      // Won with attempts left: prompt choice to stop or continue
       nextStatus = 'won_can_continue';
-    } else if (updatedGuesses.length >= gameState.maxAttempts) {
-      // All 6 attempts exhausted
+    } else if (updatedGuesses.length >= currentGameState.maxAttempts) {
       nextStatus = 'completed';
     }
 
     const updatedScore = calculateScore(updatedGuesses, newRemainingAttempts, GAME_CONFIG);
 
-    setGameState((prev) => ({
+    setGameStates((prev) => ({
       ...prev,
-      guesses: updatedGuesses,
-      status: nextStatus,
-      bestGuess: updatedScore.bestGuess,
-      totalScore: updatedScore.totalScore,
+      [activeChallenge.id]: {
+        ...currentGameState,
+        guesses: updatedGuesses,
+        status: nextStatus,
+        bestGuess: updatedScore.bestGuess,
+        totalScore: updatedScore.totalScore,
+      },
     }));
   };
 
   const handleContinuePlaying = () => {
-    setGameState((prev) => ({
+    setGameStates((prev) => ({
       ...prev,
-      status: 'in_progress',
+      [activeChallenge.id]: {
+        ...currentGameState,
+        status: 'in_progress',
+      },
     }));
   };
 
   const handleEndRound = () => {
-    setGameState((prev) => ({
+    setGameStates((prev) => ({
       ...prev,
-      status: 'completed',
-      hasEndedEarly: true,
+      [activeChallenge.id]: {
+        ...currentGameState,
+        status: 'completed',
+        hasEndedEarly: true,
+      },
     }));
   };
 
-  const handleRestartPrototype = () => {
-    setGameState({
-      challenge,
-      guesses: [],
-      maxAttempts: GAME_CONFIG.maxAttempts,
-      status: 'in_progress',
-      bestGuess: null,
-      totalScore: 0,
-      hasEndedEarly: false,
-    });
+  const handleRestartCurrentRound = () => {
+    setGameStates((prev) => ({
+      ...prev,
+      [activeChallenge.id]: createInitialGameState(activeChallenge),
+    }));
   };
 
+  const handleSelectChallenge = (targetChallenge: Challenge) => {
+    const idx = challenges.findIndex((c) => c.id === targetChallenge.id);
+    if (idx !== -1) {
+      setActiveChallengeIndex(idx);
+    }
+  };
+
+  const handleNextChallenge = () => {
+    const nextIdx = (activeChallengeIndex + 1) % challenges.length;
+    setActiveChallengeIndex(nextIdx);
+  };
+
+  const hasNextChallenge = activeChallengeIndex < challenges.length - 1;
+
+  const completedChallengeIds = Object.keys(gameStates).filter(
+    (id) => gameStates[id]?.status === 'completed'
+  );
+
   const isInputDisabled =
-    gameState.status === 'completed' ||
-    gameState.status === 'won_can_continue' ||
-    gameState.guesses.length >= gameState.maxAttempts;
+    currentGameState.status === 'completed' ||
+    currentGameState.status === 'won_can_continue' ||
+    currentGameState.guesses.length >= currentGameState.maxAttempts;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col antialiased selection:bg-amber-500 selection:text-black">
       <Header
-        currentAttempt={gameState.guesses.length + 1}
-        maxAttempts={gameState.maxAttempts}
+        currentAttempt={currentGameState.guesses.length + 1}
+        maxAttempts={currentGameState.maxAttempts}
         onOpenHelp={() => setIsHelpOpen(true)}
       />
 
-      <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
+        {/* Multi-vehicle quick switcher */}
+        <VehicleSelector
+          challenges={challenges}
+          activeChallengeId={activeChallenge.id}
+          completedChallengeIds={completedChallengeIds}
+          onSelectChallenge={handleSelectChallenge}
+        />
+
         {/* Clues Stage */}
         <ClueViewer
-          clues={challenge.clues}
+          clues={activeChallenge.clues}
           unlockedCount={unlockedCluesCount}
         />
 
@@ -142,23 +183,25 @@ export function App() {
 
         {/* Guess History (Wordle Style) */}
         <GuessHistory
-          guesses={gameState.guesses}
-          maxAttempts={gameState.maxAttempts}
+          guesses={currentGameState.guesses}
+          maxAttempts={currentGameState.maxAttempts}
         />
       </main>
 
       {/* Footer info */}
       <footer className="border-t border-zinc-900 py-4 text-center text-xs text-zinc-600">
-        <p>Tá pro Brick • Protótipo Experimental • Não afiliado à tabela FIPE</p>
+        <p>Tá pro Brick • Protótipo de Validação • 5 Carros de Teste • Não afiliado à tabela FIPE</p>
       </footer>
 
       {/* Modals */}
       <VictoryModal
-        gameState={gameState}
+        gameState={currentGameState}
         scoreBreakdown={scoreBreakdown}
         onContinuePlaying={handleContinuePlaying}
         onEndRound={handleEndRound}
-        onRestartPrototype={handleRestartPrototype}
+        onRestartPrototype={handleRestartCurrentRound}
+        onNextChallenge={handleNextChallenge}
+        hasNextChallenge={hasNextChallenge}
       />
 
       <HelpModal
