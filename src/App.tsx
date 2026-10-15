@@ -177,7 +177,7 @@ export function App() {
 
         {/* Clues Stage */}
         <ClueViewer
-          key={activeChallenge.id}
+          key={`clues-${activeChallenge.id}`}
           clues={activeChallenge.clues}
           unlockedCount={unlockedCluesCount}
           isCompleted={currentGameState.status === 'completed'}
@@ -186,7 +186,7 @@ export function App() {
 
         {/* Input Bar */}
         <GuessInput
-          key={activeChallenge.id}
+          key={`guess-${activeChallenge.id}`}
           initialValue={currentGameState.guesses[currentGameState.guesses.length - 1]?.guessValue ?? 0}
           onConfirmGuess={handleConfirmGuess}
           disabled={isInputDisabled}
