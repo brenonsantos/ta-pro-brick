@@ -28,4 +28,23 @@ Expand the single-round prototype into a 5-car interactive showcase featuring di
 
 ### 4. Deployment Readiness (Option B Preparation)
 - [x] Create `vercel.json` for zero-config SPA deployment on Vercel or similar static hosts.
-- [ ] User testing and review of multi-car experience before final deployment.
+- [x] Deployed live on Vercel (`https://ta-pro-brick.vercel.app`).
+
+---
+
+## Milestone 3: UX & Microcopy Streamlining
+### Objective
+Radically simplify on-screen text, particularly in onboarding (`HelpModal`) and game resolution/victory (`VictoryModal`), making the experience fast, visual, and mobile-friendly without overwhelming users with text.
+
+### Tasks
+- [x] **Simplify Onboarding (`HelpModal.tsx`)**:
+  - Replace 4 walls of text (clue schedules, exact percentage formulas, risk math) with 3 punchy, visual bullet points (Objetivo, Pistas, Dicas).
+  - Clean, compact single-view layout requiring minimal or zero scrolling.
+- [x] **Simplify Victory & End-of-Round (`VictoryModal.tsx`)**:
+  - Make headers and victory announcements punchy.
+  - Simplify risk dilemma to a clean visual badge (+bonus points) and direct action buttons ("Garantir Vitória" vs "Tentar Cravar").
+  - Streamline score breakdown into a sleek summary card (Preço Real, Seu Chute, Pontuação).
+  - Shorten button labels.
+- [x] **Validation & Testing**:
+  - Run `npm test` and `npm run build`.
+  - Verify UI on local dev and deploy to test on mobile.
