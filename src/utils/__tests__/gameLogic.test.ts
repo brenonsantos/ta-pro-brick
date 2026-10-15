@@ -132,12 +132,12 @@ describe('shareText generator', () => {
       evaluateGuess(70000, 50000), // warm
       evaluateGuess(52000, 50000), // win
     ];
-    const score = calculateScore(guesses, 4);
+    const score = calculateScore(guesses, 3);
     const text = generateShareText(guesses, score, 'Gol Quadrado 1994');
 
     expect(text).toContain('Gol Quadrado 1994');
-    expect(text).toContain('Acertei em 2/6 tentativas!');
-    expect(text).toContain('8.000 pts');
+    expect(text).toContain('Acertei em 2/5 tentativas!');
+    expect(text).toContain('7.500 pts');
     expect(text).toContain('🟡');
     expect(text).toContain('🟢');
     // Ensure asking price (50.000) is NOT leaked in the text!

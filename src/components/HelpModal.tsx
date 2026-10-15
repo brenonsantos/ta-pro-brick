@@ -51,7 +51,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
 
           <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4">
             <h3 className="font-extrabold text-amber-400 uppercase tracking-wide text-xs sm:text-sm">
-              2. As 6 Tentativas & Pistas Progressivas
+              2. As 5 Tentativas & Pistas Progressivas
             </h3>
             <p className="mt-1.5 text-zinc-200">
               A cada palpite confirmado, novas informações do anúncio são desbloqueadas:
@@ -70,7 +70,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <strong>Palpite 4:</strong> Cidade e estado
               </div>
               <div className="rounded-lg bg-zinc-950/80 p-2 border border-zinc-800 sm:col-span-2">
-                <strong>Palpite 5:</strong> Tempo de anúncio • <strong>Palpite 6:</strong> Chute final!
+                <strong>Palpite 5:</strong> Tempo de anúncio (última chance!)
               </div>
             </div>
           </div>

@@ -18,7 +18,7 @@ export interface GameConfig {
 }
 
 export const GAME_CONFIG: GameConfig = {
-  maxAttempts: 6,
+  maxAttempts: 5,
   tolerances: {
     standardWinMargin: 0.05,
     minFloorAmount: 1000,

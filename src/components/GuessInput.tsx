@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { formatBRL, parseBRLInput } from '../utils/currency';
-import { Send, Plus } from 'lucide-react';
+import { Send, Plus, Minus } from 'lucide-react';
 
 interface GuessInputProps {
   onConfirmGuess: (value: number) => void;
   disabled: boolean;
   minAmount?: number;
+  initialValue?: number;
 }
 
 export const GuessInput: React.FC<GuessInputProps> = ({
   onConfirmGuess,
   disabled,
   minAmount = 1000,
+  initialValue = 0,
 }) => {
-  const [numericValue, setNumericValue] = useState<number>(0);
+  const [numericValue, setNumericValue] = useState<number>(initialValue);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Sync if initialValue changes (e.g. car changed or round restarted)
+  useEffect(() => {
+    setNumericValue(initialValue);
+  }, [initialValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const parsed = parseBRLInput(e.target.value);
@@ -43,7 +50,7 @@ export const GuessInput: React.FC<GuessInputProps> = ({
     }
 
     onConfirmGuess(numericValue);
-    setNumericValue(0);
+    // Keep numericValue as selected for the next attempt!
   };
 
   return (
@@ -88,30 +95,71 @@ export const GuessInput: React.FC<GuessInputProps> = ({
           </p>
         )}
 
-        {/* Quick increment pills */}
+        {/* Quick adjustment pills */}
         {!disabled && (
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <button
-              type="button"
-              onClick={() => handleAddAmount(1000)}
-              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 text-amber-400" /> 1 mil
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddAmount(5000)}
-              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 text-amber-400" /> 5 mil
-            </button>
-            <button
-              type="button"
-              onClick={() => handleAddAmount(10000)}
-              className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950 px-3 py-1.5 text-xs sm:text-sm font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
-            >
-              <Plus className="h-3.5 w-3.5 text-amber-400" /> 10 mil
-            </button>
+          <div className="space-y-1.5 pt-1">
+            <div className="grid grid-cols-6 gap-1 sm:gap-2">
+              {/* Minus buttons */}
+              <button
+                type="button"
+                onClick={() => handleAddAmount(-10000)}
+                disabled={numericValue < 10000}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200 transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                title="Subtrair 10 mil"
+              >
+                <Minus className="h-3 w-3 text-rose-400 shrink-0" />
+                <span>10<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(-5000)}
+                disabled={numericValue < 5000}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200 transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                title="Subtrair 5 mil"
+              >
+                <Minus className="h-3 w-3 text-rose-400 shrink-0" />
+                <span>5<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(-1000)}
+                disabled={numericValue < 1000}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200 transition disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                title="Subtrair 1 mil"
+              >
+                <Minus className="h-3 w-3 text-rose-400 shrink-0" />
+                <span>1<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+
+              {/* Plus buttons */}
+              <button
+                type="button"
+                onClick={() => handleAddAmount(1000)}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
+                title="Adicionar 1 mil"
+              >
+                <Plus className="h-3 w-3 text-amber-400 shrink-0" />
+                <span>1<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(5000)}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
+                title="Adicionar 5 mil"
+              >
+                <Plus className="h-3 w-3 text-amber-400 shrink-0" />
+                <span>5<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(10000)}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800 bg-zinc-950 py-2 text-[11px] sm:text-xs font-bold text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
+                title="Adicionar 10 mil"
+              >
+                <Plus className="h-3 w-3 text-amber-400 shrink-0" />
+                <span>10<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+            </div>
           </div>
         )}
 

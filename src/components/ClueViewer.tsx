@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClueItem } from '../types/game';
 import { Camera, FileText, MapPin, Clock, Lock, Sparkles, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
 
@@ -24,6 +24,11 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
   const locationClue = clues.find((c) => c.type === 'location');
   const timeClue = clues.find((c) => c.type === 'time');
 
+  // Reset active photo to 0 whenever the car or cover image changes
+  useEffect(() => {
+    setActivePhotoIndex(0);
+  }, [coverClue?.content.coverImageUrl]);
+
   const isGalleryUnlocked = unlockedCount >= 2;
   const isDescriptionUnlocked = unlockedCount >= 3;
   const isLocationUnlocked = unlockedCount >= 4;
@@ -39,6 +44,9 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
       if (!allPhotos.includes(img)) allPhotos.push(img);
     });
   }
+
+  // Safety clamp so index can never exceed available unlocked photos (prevents 5/1 bug)
+  const currentPhotoIndex = allPhotos.length > 0 ? Math.min(activePhotoIndex, allPhotos.length - 1) : 0;
 
   const handlePrevPhoto = () => {
     setActivePhotoIndex((prev) => (prev > 0 ? prev - 1 : allPhotos.length - 1));
@@ -57,14 +65,14 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
             <>
               {/* Ambient blurred backdrop */}
               <img
-                src={allPhotos[activePhotoIndex] || allPhotos[0]}
+                src={allPhotos[currentPhotoIndex] || allPhotos[0]}
                 alt=""
                 aria-hidden="true"
                 className="absolute inset-0 h-full w-full object-cover opacity-25 blur-xl scale-110 pointer-events-none select-none"
               />
               {/* Main uncropped photo */}
               <img
-                src={allPhotos[activePhotoIndex] || allPhotos[0]}
+                src={allPhotos[currentPhotoIndex] || allPhotos[0]}
                 alt="Foto do anúncio"
                 className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none"
               />
@@ -78,7 +86,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           {/* Photo Counter & Badge */}
           <div className="absolute bottom-3 left-3 sm:bottom-4 sm:left-4 z-20 flex items-center gap-2">
             <span className="rounded-full bg-black/75 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md border border-white/10">
-              📷 {activePhotoIndex + 1}/{allPhotos.length}
+              📷 {currentPhotoIndex + 1}/{allPhotos.length}
             </span>
             {isGalleryUnlocked && (
               <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md shadow-md">

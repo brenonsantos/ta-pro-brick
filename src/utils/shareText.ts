@@ -23,7 +23,7 @@ export function generateShareText(
   guesses: GuessEvaluation[],
   scoreBreakdown: ScoreBreakdown,
   challengeTitle: string,
-  maxAttempts: number = 6
+  maxAttempts: number = 5
 ): string {
   const isWin = scoreBreakdown.bestGuess?.isWin ?? false;
   const attemptsUsed = guesses.length;

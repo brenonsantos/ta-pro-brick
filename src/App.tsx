@@ -99,6 +99,9 @@ export function App() {
         totalScore: updatedScore.totalScore,
       },
     }));
+
+    // Auto-scroll to top smoothly so player immediately sees the new clue
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleContinuePlaying = () => {
@@ -127,18 +130,21 @@ export function App() {
       ...prev,
       [activeChallenge.id]: createInitialGameState(activeChallenge),
     }));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectChallenge = (targetChallenge: Challenge) => {
     const idx = challenges.findIndex((c) => c.id === targetChallenge.id);
     if (idx !== -1) {
       setActiveChallengeIndex(idx);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleNextChallenge = () => {
     const nextIdx = (activeChallengeIndex + 1) % challenges.length;
     setActiveChallengeIndex(nextIdx);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const hasNextChallenge = activeChallengeIndex < challenges.length - 1;
@@ -171,6 +177,7 @@ export function App() {
 
         {/* Clues Stage */}
         <ClueViewer
+          key={activeChallenge.id}
           clues={activeChallenge.clues}
           unlockedCount={unlockedCluesCount}
           isCompleted={currentGameState.status === 'completed'}
@@ -179,6 +186,8 @@ export function App() {
 
         {/* Input Bar */}
         <GuessInput
+          key={activeChallenge.id}
+          initialValue={currentGameState.guesses[currentGameState.guesses.length - 1]?.guessValue ?? 0}
           onConfirmGuess={handleConfirmGuess}
           disabled={isInputDisabled}
         />
