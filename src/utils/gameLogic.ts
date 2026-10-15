@@ -22,9 +22,12 @@ export function evaluateGuess(
   // Determine victory tier
   const isExact = absoluteDifference <= config.tolerances.exactMarginAmount;
   const isBullseye = errorPercentage <= config.tolerances.bullseyeMargin;
+
+  // Floor margin for low-value vehicles, capped at 10% of asking price to prevent excessive tolerance on cheap parts/wheels
+  const effectiveFloor = Math.min(config.tolerances.minFloorAmount, askingPrice * 0.10);
   const isStandardWin =
     errorPercentage <= config.tolerances.standardWinMargin ||
-    absoluteDifference <= config.tolerances.minFloorAmount;
+    (effectiveFloor > 0 && absoluteDifference <= effectiveFloor);
 
   const isWin = isExact || isBullseye || isStandardWin;
 

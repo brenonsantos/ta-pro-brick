@@ -97,7 +97,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               </li>
               <li className="flex items-center gap-3">
                 <span className="h-4 w-4 rounded-full bg-emerald-500 shrink-0 shadow-sm shadow-emerald-500/50" />
-                <span><strong className="text-emerald-300">Vitória (Verde):</strong> dentro de 5% (ou R$ 1.000)</span>
+                <span><strong className="text-emerald-300">Vitória (Verde):</strong> margem de acerto (dentro de 5%)</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="h-4 w-4 rounded-full bg-purple-500 shrink-0 shadow-sm shadow-purple-500/50" />

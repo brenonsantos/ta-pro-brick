@@ -55,6 +55,19 @@ describe('gameLogic - evaluateGuess', () => {
     expect(win.tier).toBe('standard');
   });
 
+  it('caps floor tolerance on cheap items like wheels (R$ 1,000) so large errors do not win', () => {
+    const wheelsPrice = 1000;
+    // Guess of 200 is 80% error, must NOT be a win
+    const badGuess = evaluateGuess(200, wheelsPrice);
+    expect(badGuess.isWin).toBe(false);
+    expect(badGuess.heatBand).toBe('freezing');
+
+    // Guess of 980 is 2% error, must be a win
+    const goodGuess = evaluateGuess(980, wheelsPrice);
+    expect(goodGuess.isWin).toBe(true);
+    expect(goodGuess.tier).toBe('standard');
+  });
+
   it('classifies heat bands: hot, warm, freezing', () => {
     // Hot: between 5% and 20%
     const hot = evaluateGuess(58000, askingPrice); // diff 8,000 = 16%

@@ -12,7 +12,7 @@ interface GuessInputProps {
 export const GuessInput: React.FC<GuessInputProps> = ({
   onConfirmGuess,
   disabled,
-  minAmount = 1000,
+  minAmount = 1,
   initialValue = 0,
 }) => {
   const [numericValue, setNumericValue] = useState<number>(initialValue);
@@ -44,8 +44,8 @@ export const GuessInput: React.FC<GuessInputProps> = ({
     e.preventDefault();
     if (disabled) return;
 
-    if (numericValue < minAmount) {
-      setErrorMsg(`O palpite mínimo é ${formatBRL(minAmount)}.`);
+    if (numericValue < minAmount || numericValue <= 0) {
+      setErrorMsg(minAmount > 1 ? `O palpite mínimo é ${formatBRL(minAmount)}.` : 'Digite um valor maior que zero.');
       return;
     }
 
@@ -158,6 +158,48 @@ export const GuessInput: React.FC<GuessInputProps> = ({
               >
                 <Plus className="h-3 w-3 text-amber-400 shrink-0" />
                 <span>10<span className="hidden sm:inline"> mil</span><span className="sm:hidden">k</span></span>
+              </button>
+            </div>
+
+            {/* Quick hundreds adjustment row (ideal for wheels, parts, and fine-tuning) */}
+            <div className="grid grid-cols-4 gap-1 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handleAddAmount(-500)}
+                disabled={numericValue < 500}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800/80 bg-zinc-950/70 py-1.5 text-[11px] sm:text-xs font-medium text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200 transition disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
+                title="Subtrair 500"
+              >
+                <Minus className="h-2.5 w-2.5 text-rose-400 shrink-0" />
+                <span>500</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(-100)}
+                disabled={numericValue < 100}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800/80 bg-zinc-950/70 py-1.5 text-[11px] sm:text-xs font-medium text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-200 transition disabled:opacity-25 disabled:pointer-events-none cursor-pointer"
+                title="Subtrair 100"
+              >
+                <Minus className="h-2.5 w-2.5 text-rose-400 shrink-0" />
+                <span>100</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(100)}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800/80 bg-zinc-950/70 py-1.5 text-[11px] sm:text-xs font-medium text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
+                title="Adicionar 100"
+              >
+                <Plus className="h-2.5 w-2.5 text-amber-400 shrink-0" />
+                <span>100</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAddAmount(500)}
+                className="flex items-center justify-center gap-0.5 rounded-xl border border-zinc-800/80 bg-zinc-950/70 py-1.5 text-[11px] sm:text-xs font-medium text-zinc-300 hover:border-zinc-700 hover:bg-zinc-800 transition cursor-pointer"
+                title="Adicionar 500"
+              >
+                <Plus className="h-2.5 w-2.5 text-amber-400 shrink-0" />
+                <span>500</span>
               </button>
             </div>
           </div>
