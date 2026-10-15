@@ -4,7 +4,7 @@ import { GameState } from '../types/game';
 import { ScoreBreakdown } from '../utils/gameLogic';
 import { formatBRL } from '../utils/currency';
 import { generateShareText } from '../utils/shareText';
-import { Trophy, Share2, Check, ArrowRight, RotateCcw, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Trophy, Share2, Check, ArrowRight, RotateCcw, AlertTriangle, ExternalLink, BarChart2 } from 'lucide-react';
 
 interface VictoryModalProps {
   gameState: GameState;
@@ -14,6 +14,7 @@ interface VictoryModalProps {
   onRestartPrototype: () => void;
   onNextChallenge?: () => void;
   hasNextChallenge?: boolean;
+  onOpenStats?: () => void;
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
@@ -24,6 +25,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onRestartPrototype,
   onNextChallenge,
   hasNextChallenge,
+  onOpenStats,
 }) => {
   const [copied, setCopied] = useState(false);
   const isWon = scoreBreakdown.bestGuess?.isWin ?? false;
@@ -200,6 +202,16 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                   <ExternalLink className="h-3.5 w-3.5 text-amber-400" />
                   Ver Anúncio Original ↗
                 </a>
+              )}
+
+              {onOpenStats && (
+                <button
+                  onClick={onOpenStats}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
+                >
+                  <BarChart2 className="h-4 w-4 text-amber-400" />
+                  Ver Minhas Estatísticas
+                </button>
               )}
 
               <button

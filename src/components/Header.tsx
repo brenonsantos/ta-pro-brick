@@ -1,16 +1,17 @@
-import React from 'react';
-import { HelpCircle, Car } from 'lucide-react';
+import { HelpCircle, Car, BarChart2 } from 'lucide-react';
 
 interface HeaderProps {
   currentAttempt: number;
   maxAttempts: number;
   onOpenHelp: () => void;
+  onOpenStats?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentAttempt,
   maxAttempts,
   onOpenHelp,
+  onOpenStats,
 }) => {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-4 sm:px-8 py-3.5 sm:py-4 backdrop-blur-md">
@@ -28,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         <div className="rounded-full border border-zinc-800 bg-zinc-900 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-zinc-300">
           Tentativa{' '}
           <span className="font-bold text-amber-400">
@@ -36,6 +37,15 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
           /{maxAttempts}
         </div>
+
+        <button
+          onClick={onOpenStats}
+          className="rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+          title="Estatísticas"
+          aria-label="Estatísticas"
+        >
+          <BarChart2 className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
 
         <button
           onClick={onOpenHelp}

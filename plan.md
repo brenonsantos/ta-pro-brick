@@ -48,3 +48,28 @@ Radically simplify on-screen text, particularly in onboarding (`HelpModal`) and 
 - [x] **Validation & Testing**:
   - Run `npm test` and `npm run build`.
   - Verify UI on local dev and deploy to test on mobile.
+
+---
+
+## Milestone 4: Local Persistence & Player Statistics (Option 1)
+### Objective
+Ensure players never lose their in-progress guesses upon page refresh and maintain lifetime player statistics (games played, win percentage, daily streaks, and guess distribution) stored locally in `localStorage` without requiring an account.
+
+### Tasks
+- [x] **Data Model & Logic (`src/utils/statsManager.ts`)**:
+  - Define `PlayerStats` (gamesPlayed, gamesWon, currentStreak, maxStreak, guessDistribution, completedChallenges, lastPlayedDate).
+  - Functions: `loadPlayerStats()`, `recordGameResult()`, `loadSavedGameStates()`, `saveGameStates()`.
+  - Handle date calculations for streaks (consecutive days increment streak, missed days reset streak).
+  - Deduplicate to prevent counting the same vehicle/challenge multiple times in stats.
+- [x] **Stats UI & Visuals (`src/components/StatsModal.tsx`)**:
+  - Clean modal matching Wordle styling: 4 stats counters (Jogados, % Vitórias, Sequência Atual, Melhor Sequência).
+  - Guess distribution bar chart (Tentativas 1 a 5 com barras proporcionais).
+- [x] **Integration in Header & Victory Modal**:
+  - Add stats button (`BarChart2`) in `Header.tsx` to view stats anytime.
+  - In `VictoryModal.tsx`, show quick stats pills or button to open full stats.
+  - Integrate `loadSavedGameStates` and `saveGameStates` in `App.tsx` state management.
+- [x] **Unit Tests**:
+  - Test streak calculation, win/loss stats recording, and deduplication logic in `src/utils/__tests__/statsManager.test.ts`.
+- [x] **Validation & Verification**:
+  - Run `npm test` and `npm run build`.
+  - Test locally and deploy to Vercel for mobile review.

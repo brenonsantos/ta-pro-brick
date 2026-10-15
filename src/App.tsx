@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { VehicleSelector } from './components/VehicleSelector';
 import { ClueViewer } from './components/ClueViewer';
@@ -6,11 +6,20 @@ import { GuessHistory } from './components/GuessHistory';
 import { GuessInput } from './components/GuessInput';
 import { VictoryModal } from './components/VictoryModal';
 import { HelpModal } from './components/HelpModal';
+import { StatsModal } from './components/StatsModal';
 import { LastGuessFeedback } from './components/LastGuessFeedback';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
 import { GAME_CONFIG } from './config/gameConfig';
 import { evaluateGuess, calculateScore } from './utils/gameLogic';
+import {
+  loadPlayerStats,
+  savePlayerStats,
+  loadSavedGameStates,
+  saveGameStates,
+  calculateNextStats,
+  PlayerStats,
+} from './utils/statsManager';
 import mockChallengesData from './data/mockChallenges.json';
 
 const challenges: Challenge[] = mockChallengesData as Challenge[];
@@ -45,13 +54,31 @@ function getUnlockedClueInfo(guessesCount: number) {
 
 export function App() {
   const [activeChallengeIndex, setActiveChallengeIndex] = useState<number>(0);
+  const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats());
+  const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
+
   const [gameStates, setGameStates] = useState<Record<string, GameState>>(() => {
+    const saved = loadSavedGameStates();
+    if (saved && Object.keys(saved).length > 0) {
+      const merged = { ...saved };
+      challenges.forEach((c) => {
+        if (!merged[c.id]) {
+          merged[c.id] = createInitialGameState(c);
+        }
+      });
+      return merged;
+    }
     const initial: Record<string, GameState> = {};
     challenges.forEach((c) => {
       initial[c.id] = createInitialGameState(c);
     });
     return initial;
   });
+
+  // Save game state progress to localStorage whenever gameStates change
+  useEffect(() => {
+    saveGameStates(gameStates);
+  }, [gameStates]);
 
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(() => {
     try {
@@ -116,7 +143,19 @@ export function App() {
       },
     }));
 
-    if (nextStatus === 'completed' || nextStatus === 'won_can_continue') {
+    if (nextStatus === 'completed') {
+      const isWin = evaluation.isWin || updatedScore.bestGuess?.isWin || false;
+      const nextStats = calculateNextStats(playerStats, {
+        challengeId: activeChallenge.id,
+        isWin,
+        attemptsUsed: updatedGuesses.length,
+      });
+      setPlayerStats(nextStats);
+      savePlayerStats(nextStats);
+      return;
+    }
+
+    if (nextStatus === 'won_can_continue') {
       // Modal will trigger; keep in place
       return;
     }
@@ -149,6 +188,15 @@ export function App() {
         hasEndedEarly: true,
       },
     }));
+
+    const isWin = scoreBreakdown.bestGuess?.isWin ?? true;
+    const nextStats = calculateNextStats(playerStats, {
+      challengeId: activeChallenge.id,
+      isWin,
+      attemptsUsed: currentGameState.guesses.length,
+    });
+    setPlayerStats(nextStats);
+    savePlayerStats(nextStats);
   };
 
   const handleRestartCurrentRound = () => {
@@ -193,6 +241,7 @@ export function App() {
         currentAttempt={currentGameState.guesses.length + 1}
         maxAttempts={currentGameState.maxAttempts}
         onOpenHelp={() => setIsHelpOpen(true)}
+        onOpenStats={() => setIsStatsOpen(true)}
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
@@ -257,6 +306,14 @@ export function App() {
         onRestartPrototype={handleRestartCurrentRound}
         onNextChallenge={handleNextChallenge}
         hasNextChallenge={hasNextChallenge}
+        onOpenStats={() => setIsStatsOpen(true)}
+      />
+
+      <StatsModal
+        isOpen={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
+        stats={playerStats}
+        currentAttempt={currentGameState.guesses.length}
       />
 
       <HelpModal
