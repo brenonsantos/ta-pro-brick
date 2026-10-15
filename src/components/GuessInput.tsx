@@ -54,7 +54,7 @@ export const GuessInput: React.FC<GuessInputProps> = ({
   };
 
   return (
-    <div className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/90 p-4 sm:p-6 shadow-2xl backdrop-blur-md">
+    <div id="guess-input-section" className="rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900/90 p-4 sm:p-6 shadow-2xl backdrop-blur-md scroll-mt-24">
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
           <label htmlFor="price-input" className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400">

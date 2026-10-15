@@ -6,6 +6,8 @@ import { GuessHistory } from './components/GuessHistory';
 import { GuessInput } from './components/GuessInput';
 import { VictoryModal } from './components/VictoryModal';
 import { HelpModal } from './components/HelpModal';
+import { LastGuessFeedback } from './components/LastGuessFeedback';
+import { StickyGuessHud } from './components/StickyGuessHud';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
 import { GAME_CONFIG } from './config/gameConfig';
@@ -27,8 +29,24 @@ function createInitialGameState(challenge: Challenge): GameState {
   };
 }
 
+function getUnlockedClueInfo(guessesCount: number) {
+  switch (guessesCount) {
+    case 1:
+      return { label: 'Galeria de Fotos', elementId: 'clue-section-gallery' };
+    case 2:
+      return { label: 'Descrição do Anúncio', elementId: 'clue-section-description' };
+    case 3:
+      return { label: 'Cidade e Estado', elementId: 'clue-section-location' };
+    case 4:
+      return { label: 'Tempo de Publicação', elementId: 'clue-section-time' };
+    default:
+      return null;
+  }
+}
+
 export function App() {
   const [activeChallengeIndex, setActiveChallengeIndex] = useState<number>(0);
+  const [feedbackFlowMode, setFeedbackFlowMode] = useState<'A' | 'B'>('A');
   const [gameStates, setGameStates] = useState<Record<string, GameState>>(() => {
     const initial: Record<string, GameState> = {};
     challenges.forEach((c) => {
@@ -100,8 +118,22 @@ export function App() {
       },
     }));
 
-    // Auto-scroll to top smoothly so player immediately sees the new clue
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (nextStatus === 'completed' || nextStatus === 'won_can_continue') {
+      // Modal will trigger; keep in place
+      return;
+    }
+
+    // Handle Option A vs Option B flow:
+    if (feedbackFlowMode === 'B') {
+      // Option B: scroll to newly unlocked clue
+      const clueInfo = getUnlockedClueInfo(updatedGuesses.length);
+      if (clueInfo?.elementId) {
+        setTimeout(() => {
+          document.getElementById(clueInfo.elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+    // Option A keeps player in place at the input and displays LastGuessFeedback directly above it!
   };
 
   const handleContinuePlaying = () => {
@@ -153,6 +185,9 @@ export function App() {
     (id) => gameStates[id]?.status === 'completed'
   );
 
+  const latestGuess = currentGameState.guesses[currentGameState.guesses.length - 1];
+  const latestUnlockedClue = getUnlockedClueInfo(currentGameState.guesses.length);
+
   const isInputDisabled =
     currentGameState.status === 'completed' ||
     currentGameState.status === 'won_can_continue' ||
@@ -160,6 +195,17 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col antialiased selection:bg-amber-500 selection:text-black">
+      {/* Option B: Sticky HUD when viewing clues */}
+      {feedbackFlowMode === 'B' && latestGuess && currentGameState.status !== 'completed' && (
+        <StickyGuessHud
+          lastGuess={latestGuess}
+          attemptNumber={currentGameState.guesses.length}
+          onScrollToInput={() => {
+            document.getElementById('guess-input-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+        />
+      )}
+
       <Header
         currentAttempt={currentGameState.guesses.length + 1}
         maxAttempts={currentGameState.maxAttempts}
@@ -167,6 +213,35 @@ export function App() {
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
+        {/* Prototype UX Comparison Switcher */}
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-zinc-300">
+          <span className="font-bold text-amber-300">Modo de Teste UX:</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setFeedbackFlowMode('A')}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                feedbackFlowMode === 'A'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/25 scale-[1.02]'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
+              }`}
+            >
+              Opção A (Sem Scroll + Card)
+            </button>
+            <button
+              type="button"
+              onClick={() => setFeedbackFlowMode('B')}
+              className={`rounded-xl px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
+                feedbackFlowMode === 'B'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/25 scale-[1.02]'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'
+              }`}
+            >
+              Opção B (Scroll na Pista + Barra Fixa)
+            </button>
+          </div>
+        </div>
+
         {/* Multi-vehicle quick switcher */}
         <VehicleSelector
           challenges={challenges}
@@ -183,6 +258,20 @@ export function App() {
           isCompleted={currentGameState.status === 'completed'}
           originalUrl={activeChallenge.originalUrl}
         />
+
+        {/* Inline Feedback Banner (Especially useful in Option A) */}
+        {latestGuess && currentGameState.status !== 'completed' && (
+          <LastGuessFeedback
+            lastGuess={latestGuess}
+            attemptNumber={currentGameState.guesses.length}
+            unlockedClueLabel={latestUnlockedClue?.label}
+            onViewClue={() => {
+              if (latestUnlockedClue?.elementId) {
+                document.getElementById(latestUnlockedClue.elementId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
+          />
+        )}
 
         {/* Input Bar */}
         <GuessInput

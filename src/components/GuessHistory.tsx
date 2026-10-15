@@ -101,18 +101,21 @@ export const GuessHistory: React.FC<GuessHistoryProps> = ({ guesses, maxAttempts
                 {/* Direction Indicator */}
                 <div className="flex items-center">
                   {guess.direction === 'higher' && (
-                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-400">
-                      <ArrowUp className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Maior
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-emerald-400 whitespace-nowrap">
+                      <ArrowUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5] shrink-0" />
+                      <span><span className="hidden xs:inline">O dono </span>pediu mais</span>
                     </span>
                   )}
                   {guess.direction === 'lower' && (
-                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-rose-400">
-                      <ArrowDown className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Menor
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-rose-400 whitespace-nowrap">
+                      <ArrowDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5] shrink-0" />
+                      <span><span className="hidden xs:inline">O dono </span>pediu menos</span>
                     </span>
                   )}
                   {guess.direction === 'exact' && (
-                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-purple-300">
-                      <Target className="h-4 w-4 sm:h-5 sm:w-5 stroke-[2.5]" /> Na Mosca
+                    <span className="flex items-center gap-1 text-xs sm:text-sm font-bold text-purple-300 whitespace-nowrap">
+                      <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 stroke-[2.5] shrink-0" />
+                      <span>Cravou!</span>
                     </span>
                   )}
                 </div>

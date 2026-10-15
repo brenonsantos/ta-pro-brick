@@ -59,7 +59,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Photo Stage */}
-      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl">
+      <div id="clue-section-gallery" className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl scroll-mt-20">
         <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden">
           {allPhotos.length > 0 ? (
             <>
@@ -143,7 +143,8 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {/* Clue 3: Description */}
         <div
-          className={`relative rounded-2xl border p-4 sm:p-5 transition-all ${
+          id="clue-section-description"
+          className={`relative rounded-2xl border p-4 sm:p-5 transition-all scroll-mt-20 ${
             isDescriptionUnlocked
               ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
               : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
@@ -176,7 +177,8 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
         <div className="space-y-3">
           {/* Location */}
           <div
-            className={`rounded-2xl border p-4 transition-all ${
+            id="clue-section-location"
+            className={`rounded-2xl border p-4 transition-all scroll-mt-20 ${
               isLocationUnlocked
                 ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
@@ -205,7 +207,8 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
 
           {/* Time on Market */}
           <div
-            className={`rounded-2xl border p-4 transition-all ${
+            id="clue-section-time"
+            className={`rounded-2xl border p-4 transition-all scroll-mt-20 ${
               isTimeUnlocked
                 ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
