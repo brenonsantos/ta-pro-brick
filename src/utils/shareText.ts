@@ -23,12 +23,15 @@ export function generateShareText(
   guesses: GuessEvaluation[],
   scoreBreakdown: ScoreBreakdown,
   challengeTitle: string,
-  maxAttempts: number = 5
+  maxAttempts: number = 5,
+  challengeNumber?: number
 ): string {
   const isWin = scoreBreakdown.bestGuess?.isWin ?? false;
   const attemptsUsed = guesses.length;
 
-  const header = `Tá pro Brick — Desafio Diário`;
+  const header = challengeNumber
+    ? `Tá pro Brick #${challengeNumber}`
+    : `Tá pro Brick — Desafio Diário`;
   const resultSummary = isWin
     ? `Acertei em ${attemptsUsed}/${maxAttempts} tentativas! Pontuação: ${scoreBreakdown.totalScore.toLocaleString('pt-BR')} pts`
     : `Não foi dessa vez (${attemptsUsed}/${maxAttempts}). Pontuação: ${scoreBreakdown.totalScore.toLocaleString('pt-BR')} pts`;

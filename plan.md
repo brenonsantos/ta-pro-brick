@@ -73,3 +73,28 @@ Ensure players never lose their in-progress guesses upon page refresh and mainta
 - [x] **Validation & Verification**:
   - Run `npm test` and `npm run build`.
   - Test locally and deploy to Vercel for mobile review.
+
+---
+
+## Milestone 5: Daily Challenge Mechanics (Local Only)
+### Objective
+Transition the game into an official daily challenge where all players receive the same vehicle challenge for the day, accompanied by a midnight countdown timer once completed, while maintaining an accessible "Modo Treino / Garagem" for exploratory play. (Changes strictly local, no deployment).
+
+### Tasks
+- [x] **Daily Deterministic Scheduler (`src/utils/dailyChallenge.ts`)**:
+  - Deterministically map current date (`YYYY-MM-DD`) to an official daily challenge index/ID.
+  - Calculate remaining time to next midnight (`00:00:00`).
+  - Compute daily challenge number (e.g. `#1`, `#2`, ...).
+- [x] **Countdown & Daily Completion Banner (`src/components/DailyCountdown.tsx`)**:
+  - Live ticking timer (`HH:MM:SS`) until next daily challenge.
+  - Informative banner when today's official challenge is completed.
+- [x] **Game Mode Switcher (Desafio Diário vs Modo Treino)**:
+  - Default view is today's official challenge (clean, focused, without vehicle selector distraction).
+  - Optional toggle to "Modo Treino / Garagem" so users/friends can test any vehicle.
+  - Separate daily challenge state so training mode does not corrupt official daily streaks.
+- [x] **Update Share Text**:
+  - Include official daily challenge number (e.g., `Tá pro Brick #1`).
+- [x] **Validation & Local Testing**:
+  - Unit tests for date mapping and countdown calculation.
+  - Build check and verify in local browser.
+  - Keep strictly local on branch `feature/daily-challenge-mode` without deploying.

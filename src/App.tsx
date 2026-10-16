@@ -18,8 +18,15 @@ import {
   loadSavedGameStates,
   saveGameStates,
   calculateNextStats,
+  getTodayDateString,
   PlayerStats,
 } from './utils/statsManager';
+import {
+  getDailyChallengeIndex,
+  getDailyChallengeNumber,
+} from './utils/dailyChallenge';
+import { generateShareText } from './utils/shareText';
+import { DailyCountdown } from './components/DailyCountdown';
 import mockChallengesData from './data/mockChallenges.json';
 
 const challenges: Challenge[] = mockChallengesData as Challenge[];
@@ -53,9 +60,21 @@ function getUnlockedClueInfo(guessesCount: number) {
 }
 
 export function App() {
-  const [activeChallengeIndex, setActiveChallengeIndex] = useState<number>(0);
+  const [gameMode, setGameMode] = useState<'daily' | 'training'>('daily');
+  const [trainingChallengeIndex, setTrainingChallengeIndex] = useState<number>(0);
   const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats());
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
+  const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
+
+  const todayDateStr = getTodayDateString();
+  const dailyChallengeIndex = getDailyChallengeIndex(challenges.length, todayDateStr);
+  const dailyChallengeNumber = getDailyChallengeNumber(todayDateStr);
+  const dailyChallenge = challenges[dailyChallengeIndex] || challenges[0];
+
+  const activeChallenge =
+    gameMode === 'daily'
+      ? dailyChallenge
+      : challenges[trainingChallengeIndex] || challenges[0];
 
   const [gameStates, setGameStates] = useState<Record<string, GameState>>(() => {
     const saved = loadSavedGameStates();
@@ -88,8 +107,9 @@ export function App() {
     }
   });
 
-  const activeChallenge = challenges[activeChallengeIndex] || challenges[0];
-  const currentGameState = gameStates[activeChallenge.id] || createInitialGameState(activeChallenge);
+  const currentGameState =
+    gameStates[activeChallenge.id] || createInitialGameState(activeChallenge);
+  const isDailyCompleted = gameStates[dailyChallenge.id]?.status === 'completed';
 
   const handleCloseHelp = () => {
     try {
@@ -98,6 +118,32 @@ export function App() {
       // Ignore in private storage environments
     }
     setIsHelpOpen(false);
+  };
+
+  const handleShareDaily = async () => {
+    const dailyState = gameStates[dailyChallenge.id];
+    if (!dailyState) return;
+
+    const remaining = dailyState.maxAttempts - dailyState.guesses.length;
+    const score = calculateScore(dailyState.guesses, remaining, GAME_CONFIG);
+    const text = generateShareText(
+      dailyState.guesses,
+      score,
+      dailyChallenge.title,
+      dailyState.maxAttempts,
+      dailyChallengeNumber
+    );
+
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        setIsShareCopied(true);
+        setTimeout(() => setIsShareCopied(false), 2500);
+      }
+    } catch {
+      setIsShareCopied(true);
+      setTimeout(() => setIsShareCopied(false), 2500);
+    }
   };
 
   // Remaining unused attempts
@@ -210,18 +256,19 @@ export function App() {
   const handleSelectChallenge = (targetChallenge: Challenge) => {
     const idx = challenges.findIndex((c) => c.id === targetChallenge.id);
     if (idx !== -1) {
-      setActiveChallengeIndex(idx);
+      setTrainingChallengeIndex(idx);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleNextChallenge = () => {
-    const nextIdx = (activeChallengeIndex + 1) % challenges.length;
-    setActiveChallengeIndex(nextIdx);
+    const nextIdx = (trainingChallengeIndex + 1) % challenges.length;
+    setTrainingChallengeIndex(nextIdx);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const hasNextChallenge = activeChallengeIndex < challenges.length - 1;
+  const hasNextChallenge =
+    gameMode === 'training' && trainingChallengeIndex < challenges.length - 1;
 
   const completedChallengeIds = Object.keys(gameStates).filter(
     (id) => gameStates[id]?.status === 'completed'
@@ -242,17 +289,44 @@ export function App() {
         maxAttempts={currentGameState.maxAttempts}
         onOpenHelp={() => setIsHelpOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
+        dayNumber={dailyChallengeNumber}
+        gameMode={gameMode}
+        onToggleGameMode={() => setGameMode((m) => (m === 'daily' ? 'training' : 'daily'))}
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
 
-        {/* Multi-vehicle quick switcher */}
-        <VehicleSelector
-          challenges={challenges}
-          activeChallengeId={activeChallenge.id}
-          completedChallengeIds={completedChallengeIds}
-          onSelectChallenge={handleSelectChallenge}
-        />
+        {/* In Training Mode: show training banner & vehicle switcher */}
+        {gameMode === 'training' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+              <span className="font-semibold">Modo Garagem: teste qualquer veículo livremente.</span>
+              <button
+                type="button"
+                onClick={() => setGameMode('daily')}
+                className="font-bold underline text-amber-400 hover:text-amber-300 cursor-pointer"
+              >
+                Voltar ao Diário →
+              </button>
+            </div>
+            <VehicleSelector
+              challenges={challenges}
+              activeChallengeId={activeChallenge.id}
+              completedChallengeIds={completedChallengeIds}
+              onSelectChallenge={handleSelectChallenge}
+            />
+          </div>
+        )}
+
+        {/* If Daily Challenge is completed, show the Countdown Banner */}
+        {gameMode === 'daily' && isDailyCompleted && (
+          <DailyCountdown
+            dayNumber={dailyChallengeNumber}
+            onSwitchToTraining={() => setGameMode('training')}
+            onShareResult={handleShareDaily}
+            isCopied={isShareCopied}
+          />
+        )}
 
         {/* Clues Stage */}
         <ClueViewer
@@ -307,6 +381,7 @@ export function App() {
         onNextChallenge={handleNextChallenge}
         hasNextChallenge={hasNextChallenge}
         onOpenStats={() => setIsStatsOpen(true)}
+        challengeNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
       />
 
       <StatsModal

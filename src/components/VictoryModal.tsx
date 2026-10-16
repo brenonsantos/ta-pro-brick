@@ -15,6 +15,7 @@ interface VictoryModalProps {
   onNextChallenge?: () => void;
   hasNextChallenge?: boolean;
   onOpenStats?: () => void;
+  challengeNumber?: number;
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
@@ -26,6 +27,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onNextChallenge,
   hasNextChallenge,
   onOpenStats,
+  challengeNumber,
 }) => {
   const [copied, setCopied] = useState(false);
   const isWon = scoreBreakdown.bestGuess?.isWin ?? false;
@@ -50,7 +52,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
       gameState.guesses,
       scoreBreakdown,
       gameState.challenge.title,
-      gameState.maxAttempts
+      gameState.maxAttempts,
+      challengeNumber
     );
 
     try {
