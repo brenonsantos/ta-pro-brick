@@ -4,14 +4,15 @@ import { GameState } from '../types/game';
 import { ScoreBreakdown } from '../utils/gameLogic';
 import { formatBRL } from '../utils/currency';
 import { generateShareText } from '../utils/shareText';
-import { Trophy, Share2, Check, ArrowRight, RotateCcw, AlertTriangle, ExternalLink, BarChart2 } from 'lucide-react';
+import { Trophy, Share2, Check, ArrowRight, AlertTriangle, ExternalLink, BarChart2, X, Eye } from 'lucide-react';
 
 interface VictoryModalProps {
+  isOpen?: boolean;
+  onClose?: () => void;
   gameState: GameState;
   scoreBreakdown: ScoreBreakdown;
   onContinuePlaying: () => void;
   onEndRound: () => void;
-  onRestartPrototype: () => void;
   onNextChallenge?: () => void;
   hasNextChallenge?: boolean;
   onOpenStats?: () => void;
@@ -19,11 +20,12 @@ interface VictoryModalProps {
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
+  isOpen = true,
+  onClose,
   gameState,
   scoreBreakdown,
   onContinuePlaying,
   onEndRound,
-  onRestartPrototype,
   onNextChallenge,
   hasNextChallenge,
   onOpenStats,
@@ -37,7 +39,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   const remainingAttempts = gameState.maxAttempts - gameState.guesses.length;
 
   useEffect(() => {
-    if (isWon) {
+    if (isWon && isOpen) {
       confetti({
         particleCount: 80,
         spread: 70,
@@ -45,7 +47,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         colors: ['#f59e0b', '#10b981', '#8b5cf6', '#3b82f6'],
       });
     }
-  }, [isWon]);
+  }, [isWon, isOpen]);
 
   const handleShare = async () => {
     const text = generateShareText(
@@ -69,7 +71,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
     }
   };
 
-  if (!isWonCanContinue && !isCompleted) {
+  if (!isOpen || (!isWonCanContinue && !isCompleted)) {
     return null;
   }
 
@@ -78,6 +80,19 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
       <div className="relative w-full max-w-sm sm:max-w-md overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl">
         {/* Glow ambient background */}
         <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-amber-500/20 blur-3xl" />
+
+        {/* Close Button if user wants to inspect the ad behind */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
+            aria-label="Fechar para rever o anúncio"
+            title="Fechar e rever anúncio"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
 
         {/* Modal Header */}
         <div className="text-center">
@@ -118,6 +133,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
             <div className="space-y-2">
               <button
+                type="button"
                 onClick={onEndRound}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
               >
@@ -126,6 +142,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
               </button>
 
               <button
+                type="button"
                 onClick={onContinuePlaying}
                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-3 text-xs font-bold text-zinc-300 hover:bg-zinc-800 transition cursor-pointer"
               >
@@ -166,15 +183,17 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             <div className="space-y-2">
               {hasNextChallenge && onNextChallenge && (
                 <button
+                  type="button"
                   onClick={onNextChallenge}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 py-3.5 text-sm font-black uppercase tracking-wide text-zinc-950 shadow-lg shadow-amber-500/20 hover:bg-amber-400 transition active:scale-[0.98] cursor-pointer"
                 >
                   <ArrowRight className="h-4 w-4" />
-                  Próximo Desafio 🚗
+                  Próximo Carro do Treino 🚗
                 </button>
               )}
 
               <button
+                type="button"
                 onClick={handleShare}
                 className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-sm font-black uppercase tracking-wide transition active:scale-[0.98] cursor-pointer ${
                   hasNextChallenge
@@ -209,6 +228,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
 
               {onOpenStats && (
                 <button
+                  type="button"
                   onClick={onOpenStats}
                   className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
                 >
@@ -217,13 +237,16 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 </button>
               )}
 
-              <button
-                onClick={onRestartPrototype}
-                className="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-                Jogar Novamente este Anúncio
-              </button>
+              {onClose && (
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex w-full items-center justify-center gap-1.5 py-2 text-xs font-semibold text-zinc-400 hover:text-white transition cursor-pointer"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  Fechar para rever fotos e anúncio
+                </button>
+              )}
             </div>
           </div>
         )}

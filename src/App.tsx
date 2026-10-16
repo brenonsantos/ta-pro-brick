@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Trophy } from 'lucide-react';
 import { Header } from './components/Header';
 import { VehicleSelector } from './components/VehicleSelector';
 import { ClueViewer } from './components/ClueViewer';
@@ -65,6 +66,7 @@ export function App() {
   const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats());
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(true);
 
   const todayDateStr = getTodayDateString();
   const dailyChallengeIndex = getDailyChallengeIndex(challenges.length, todayDateStr);
@@ -198,11 +200,12 @@ export function App() {
       });
       setPlayerStats(nextStats);
       savePlayerStats(nextStats);
+      setIsVictoryModalOpen(true);
       return;
     }
 
     if (nextStatus === 'won_can_continue') {
-      // Modal will trigger; keep in place
+      setIsVictoryModalOpen(true);
       return;
     }
 
@@ -243,20 +246,14 @@ export function App() {
     });
     setPlayerStats(nextStats);
     savePlayerStats(nextStats);
-  };
-
-  const handleRestartCurrentRound = () => {
-    setGameStates((prev) => ({
-      ...prev,
-      [activeChallenge.id]: createInitialGameState(activeChallenge),
-    }));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsVictoryModalOpen(true);
   };
 
   const handleSelectChallenge = (targetChallenge: Challenge) => {
     const idx = challenges.findIndex((c) => c.id === targetChallenge.id);
     if (idx !== -1) {
       setTrainingChallengeIndex(idx);
+      setIsVictoryModalOpen(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -264,6 +261,7 @@ export function App() {
   const handleNextChallenge = () => {
     const nextIdx = (trainingChallengeIndex + 1) % challenges.length;
     setTrainingChallengeIndex(nextIdx);
+    setIsVictoryModalOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -324,8 +322,23 @@ export function App() {
             dayNumber={dailyChallengeNumber}
             onSwitchToTraining={() => setGameMode('training')}
             onShareResult={handleShareDaily}
+            onOpenResult={() => setIsVictoryModalOpen(true)}
             isCopied={isShareCopied}
           />
+        )}
+
+        {/* Floating/Inline button to reopen result if user dismissed modal */}
+        {currentGameState.status === 'completed' && !isVictoryModalOpen && (
+          <div className="flex justify-center animate-in fade-in">
+            <button
+              type="button"
+              onClick={() => setIsVictoryModalOpen(true)}
+              className="flex items-center gap-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 px-5 py-2.5 text-xs sm:text-sm font-bold text-amber-300 hover:bg-amber-500/20 transition cursor-pointer shadow-lg"
+            >
+              <Trophy className="h-4 w-4 text-amber-400" />
+              Ver Resultado da Rodada 🏆
+            </button>
+          </div>
         )}
 
         {/* Clues Stage */}
@@ -373,11 +386,12 @@ export function App() {
 
       {/* Modals */}
       <VictoryModal
+        isOpen={isVictoryModalOpen}
+        onClose={() => setIsVictoryModalOpen(false)}
         gameState={currentGameState}
         scoreBreakdown={scoreBreakdown}
         onContinuePlaying={handleContinuePlaying}
         onEndRound={handleEndRound}
-        onRestartPrototype={handleRestartCurrentRound}
         onNextChallenge={handleNextChallenge}
         hasNextChallenge={hasNextChallenge}
         onOpenStats={() => setIsStatsOpen(true)}
