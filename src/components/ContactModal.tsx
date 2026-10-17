@@ -31,8 +31,8 @@ interface ContactModalProps {
   initialTab?: 'suggest' | 'remove' | 'contact';
 }
 
-const CONTACT_EMAIL = (import.meta as any).env?.VITE_CONTACT_EMAIL || 'contato@taprobrick.com.br';
-const INSTAGRAM_HANDLE = (import.meta as any).env?.VITE_INSTAGRAM_HANDLE || 'taprobrick';
+const CONTACT_EMAIL = (import.meta as any).env?.VITE_CONTACT_EMAIL || 'taprobrick.jogo@gmail.com';
+const INSTAGRAM_HANDLE = (import.meta as any).env?.VITE_INSTAGRAM_HANDLE || 'taprobrick.jogo';
 
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,

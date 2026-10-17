@@ -232,4 +232,31 @@ Refine the UI per user instruction:
   - Update unit tests in `rankingService.test.ts` and `ContactAndCookies.test.tsx`.
   - Run `npm test` (36/36 passing) and `npm run build` (0 errors).
 
+---
+
+## Milestone 11: Brand & Contact Updates and Hybrid Facebook Marketplace Extractor
+### Objective
+1. Update contact email to `taprobrick.jogo@gmail.com` and Instagram handle to `@taprobrick.jogo` across the application and tests.
+2. Standardize canonical game domain links to `https://taprobrick.com.br` across meta tags, share texts, and documentation.
+3. Develop a hybrid browser extractor tool (bookmarklet / console script / helper) that enables curators to extract listing details (title, price, description, location, time on market, high-res photos, and source URL) directly from Facebook Marketplace listings in their authenticated browser, with one-click export into Tá pro Brick's admin curation panel.
+4. Add an "Importar Dados do Anúncio (JSON/Texto)" feature in the Admin Panel (`/admin`) to paste extracted data and populate all fields in 1 click.
+
+### Tasks
+- [x] **Brand & Contact Information Updates**:
+  - Update `CONTACT_EMAIL` default to `taprobrick.jogo@gmail.com` in `ContactModal.tsx`.
+  - Update `INSTAGRAM_HANDLE` default to `taprobrick.jogo` in `ContactModal.tsx`.
+  - Update `index.html` Open Graph and canonical links to `https://taprobrick.com.br`.
+  - Update any existing unit tests expecting old contact info.
+- [x] **Hybrid Facebook Marketplace Extractor Tool**:
+  - Create `scripts/fb-marketplace-extractor.js`:
+    - Robust DOM extraction logic targeting Facebook Marketplace listing structure (title, price, photos, description, location, time posted, source URL).
+    - Can be executed directly in DevTools Console or as a Bookmarklet.
+    - Copies formatted Tá pro Brick JSON to clipboard and displays an on-screen preview modal with copy confirmation.
+- [x] **Admin Import Feature (`AdminPage.tsx`)**:
+  - Add an "Importar Anúncio (JSON)" button/modal in `/admin` to load extracted marketplace data in 1 click.
+- [x] **Validation & Verification**:
+  - Run `npm test` and ensure all tests pass.
+  - Run `npm run build` with zero TypeScript errors.
+
+
 

@@ -14,6 +14,7 @@ import {
   Upload,
   X,
   Loader2,
+  FileCode,
 } from 'lucide-react';
 import {
   fetchAllChallenges,
@@ -23,6 +24,7 @@ import {
 } from '../services/adminService';
 import { uploadMultiplePhotos } from '../services/storageService';
 import { isSupabaseConfigured } from '../services/supabase';
+import { ImportChallengeModal } from '../components/ImportChallengeModal';
 import { formatBRL } from '../utils/currency';
 
 interface AdminPageProps {
@@ -59,6 +61,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
   const [authorizationNotes, setAuthorizationNotes] = useState('');
 
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const loadChallengesList = async () => {
     setIsLoading(true);
@@ -118,6 +121,21 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
     setOriginalUrl('');
     setAuthorizationNotes('');
     setFormMessage(null);
+  };
+
+  const handleImportData = (data: any) => {
+    if (data.title) setTitle(data.title);
+    if (data.price !== undefined && data.price !== null) setPriceInput(String(data.price));
+    if (data.photos && Array.isArray(data.photos)) setPhotosText(data.photos.join('\n'));
+    if (data.description) setDescription(data.description);
+    if (data.location) setLocation(data.location);
+    if (data.timePosted) setTimePosted(data.timePosted);
+    if (data.originalUrl) setOriginalUrl(data.originalUrl);
+    if (data.authorizationNotes) setAuthorizationNotes(data.authorizationNotes);
+    setFormMessage({
+      type: 'success',
+      text: 'Dados do anúncio importados com sucesso! Revise os campos e clique em Agendar Desafio.',
+    });
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -342,15 +360,26 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
                 {editingId ? 'Editar Desafio Agendado' : 'Agendar Novo Desafio'}
               </h2>
             </div>
-            {editingId && (
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleResetForm}
-                className="text-xs text-zinc-400 hover:text-white underline cursor-pointer"
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-bold text-amber-400 hover:bg-zinc-700 hover:text-amber-300 transition cursor-pointer"
+                title="Preencher campos a partir do extrator do Facebook Marketplace ou JSON"
               >
-                Cancelar Edição
+                <FileCode className="h-3.5 w-3.5" />
+                <span>Importar Anúncio (JSON)</span>
               </button>
-            )}
+              {editingId && (
+                <button
+                  type="button"
+                  onClick={handleResetForm}
+                  className="text-xs text-zinc-400 hover:text-white underline cursor-pointer"
+                >
+                  Cancelar Edição
+                </button>
+              )}
+            </div>
           </div>
 
           {formMessage && (
@@ -664,6 +693,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
           </div>
         </section>
       </main>
+
+      <ImportChallengeModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={handleImportData}
+      />
     </div>
   );
 };

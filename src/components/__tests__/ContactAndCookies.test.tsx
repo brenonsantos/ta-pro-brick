@@ -49,6 +49,8 @@ describe('CookieBanner, ContactModal e AdBannerSlot', () => {
     );
     expect(html).toContain('Instagram');
     expect(html).toContain('E-mail');
+    expect(html).toContain('taprobrick.jogo@gmail.com');
+    expect(html).toContain('instagram.com/taprobrick.jogo');
   });
 
   it('AdBannerSlot não é renderizado enquanto o jogo não estiver concluído', () => {
