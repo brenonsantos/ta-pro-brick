@@ -161,6 +161,23 @@ export function App() {
     gameStates[activeChallenge.id] || createInitialGameState(activeChallenge);
   const isDailyCompleted = gameStates[dailyChallenge.id]?.status === 'completed';
 
+  // Se o desafio diário já foi concluído localmente, sincroniza automaticamente com o Supabase
+  useEffect(() => {
+    const dailyState = gameStates[dailyChallenge.id];
+    if (dailyState && dailyState.status === 'completed') {
+      const remaining = dailyState.maxAttempts - dailyState.guesses.length;
+      const score = calculateScore(dailyState.guesses, remaining, GAME_CONFIG);
+      const isWin = score.bestGuess?.isWin ?? false;
+      submitDailyResult({
+        challengeId: dailyChallenge.id,
+        score: score.totalScore,
+        attemptsCount: dailyState.guesses.length,
+        bestGuess: score.bestGuess?.guessValue || null,
+        won: isWin,
+      });
+    }
+  }, [dailyChallenge.id]);
+
   const handleCloseHelp = () => {
     try {
       localStorage.setItem(ONBOARDING_STORAGE_KEY, 'true');
