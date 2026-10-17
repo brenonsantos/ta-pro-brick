@@ -36,9 +36,10 @@ import {
 } from './utils/dailyChallenge';
 import { generateShareText } from './utils/shareText';
 import { DailyCountdown } from './components/DailyCountdown';
+import { loadActiveChallenges } from './services/challengeService';
 import mockChallengesData from './data/mockChallenges.json';
 
-const challenges: Challenge[] = mockChallengesData as Challenge[];
+const initialDefaultChallenges: Challenge[] = mockChallengesData as Challenge[];
 const ONBOARDING_STORAGE_KEY = 'taprobrick_has_seen_onboarding';
 
 // Feature flags
@@ -117,10 +118,32 @@ export function App() {
     }
   }, []);
 
+  const [challenges, setChallenges] = useState<Challenge[]>(initialDefaultChallenges);
+
+  useEffect(() => {
+    loadActiveChallenges().then((loaded) => {
+      if (loaded && loaded.length > 0) {
+        setChallenges(loaded);
+        setGameStates((prev) => {
+          const updated = { ...prev };
+          let changed = false;
+          loaded.forEach((c) => {
+            if (!updated[c.id]) {
+              updated[c.id] = createInitialGameState(c);
+              changed = true;
+            }
+          });
+          return changed ? updated : prev;
+        });
+      }
+    });
+  }, []);
+
   const todayDateStr = getTodayDateString();
+  const scheduledTodayChallenge = challenges.find((c) => c.publishDate === todayDateStr);
   const dailyChallengeIndex = getDailyChallengeIndex(challenges.length, todayDateStr);
   const dailyChallengeNumber = getDailyChallengeNumber(todayDateStr);
-  const dailyChallenge = challenges[dailyChallengeIndex] || challenges[0];
+  const dailyChallenge = scheduledTodayChallenge || challenges[dailyChallengeIndex] || challenges[0];
 
   const activeChallenge =
     gameMode === 'daily'

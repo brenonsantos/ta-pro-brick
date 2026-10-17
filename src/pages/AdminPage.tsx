@@ -11,6 +11,9 @@ import {
   KeyRound,
   Database,
   Image as ImageIcon,
+  Upload,
+  X,
+  Loader2,
 } from 'lucide-react';
 import {
   fetchAllChallenges,
@@ -18,6 +21,7 @@ import {
   deleteChallenge,
   AdminChallengeInput,
 } from '../services/adminService';
+import { uploadMultiplePhotos } from '../services/storageService';
 import { isSupabaseConfigured } from '../services/supabase';
 import { formatBRL } from '../utils/currency';
 
@@ -168,10 +172,53 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
     await loadChallengesList();
   };
 
+  const [isUploadingPhotos, setIsUploadingPhotos] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
+
   const parsedPhotoUrls = photosText
     .split('\n')
     .map((p) => p.trim())
     .filter((p) => p.startsWith('http') || p.startsWith('/'));
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingPhotos(true);
+    setUploadProgress(`0/${files.length}`);
+
+    const fileList = Array.from(files);
+    const { urls, errors } = await uploadMultiplePhotos(fileList, (done, total) => {
+      setUploadProgress(`${done}/${total}`);
+    });
+
+    if (urls.length > 0) {
+      setPhotosText((prev) => {
+        const existing = prev.trim();
+        const newUrls = urls.join('\n');
+        return existing ? `${existing}\n${newUrls}` : newUrls;
+      });
+      setFormMessage({
+        type: 'success',
+        text: `${urls.length} foto(s) enviada(s) para o Supabase Storage com sucesso!`,
+      });
+    }
+
+    if (errors.length > 0) {
+      setFormMessage({
+        type: 'error',
+        text: `Erro ao enviar algumas fotos: ${errors.join(', ')}`,
+      });
+    }
+
+    setIsUploadingPhotos(false);
+    e.target.value = '';
+  };
+
+  const handleRemovePhoto = (indexToRemove: number) => {
+    const updated = parsedPhotoUrls.filter((_, idx) => idx !== indexToRemove);
+    setPhotosText(updated.join('\n'));
+  };
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -393,32 +440,67 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
 
             {/* Photos */}
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
                 <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
                   <ImageIcon className="h-3.5 w-3.5 text-amber-400" />
-                  <span>URLs das Fotos (1 por linha — a 1ª é a capa) *</span>
+                  <span>Fotos do Anúncio (a 1ª será a capa) *</span>
                 </label>
-                <span className="text-[11px] text-zinc-400 font-medium">
-                  {parsedPhotoUrls.length} foto(s) detectada(s)
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-zinc-400 font-medium">
+                    {parsedPhotoUrls.length} foto(s)
+                  </span>
+                  <label className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-bold text-amber-400 hover:bg-zinc-700 hover:text-amber-300 transition cursor-pointer">
+                    {isUploadingPhotos ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        <span>Enviando {uploadProgress}...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-3.5 w-3.5" />
+                        <span>Upload do Dispositivo</span>
+                      </>
+                    )}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      disabled={isUploadingPhotos}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
+
               <textarea
                 value={photosText}
                 onChange={(e) => setPhotosText(e.target.value)}
                 rows={3}
-                placeholder="https://exemplo.com/foto1.jpg&#10;https://exemplo.com/foto2.jpg"
+                placeholder="URLs das fotos (1 por linha) ou use o botão de Upload acima..."
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-xs font-mono text-zinc-200 focus:border-amber-500 focus:outline-none"
                 required
               />
 
               {parsedPhotoUrls.length > 0 && (
-                <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="mt-2.5 flex items-center gap-2.5 overflow-x-auto pb-1.5">
                   {parsedPhotoUrls.map((url, i) => (
-                    <div key={i} className="relative h-14 w-14 shrink-0 rounded-lg overflow-hidden border border-zinc-700">
+                    <div
+                      key={i}
+                      className="group relative h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-zinc-700 bg-zinc-900"
+                    >
                       <img src={url} alt={`Preview ${i}`} className="h-full w-full object-cover" />
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[9px] text-center font-bold text-white">
+                      <span className="absolute bottom-0 left-0 right-0 bg-black/80 text-[9px] text-center font-bold text-amber-400 py-0.5">
                         {i === 0 ? 'Capa' : `#${i + 1}`}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(i)}
+                        className="absolute top-1 right-1 h-4 w-4 rounded-full bg-black/80 text-zinc-400 hover:text-rose-400 flex items-center justify-center transition cursor-pointer"
+                        title="Remover foto"
+                      >
+                        <X className="h-2.5 w-2.5 stroke-[3]" />
+                      </button>
                     </div>
                   ))}
                 </div>

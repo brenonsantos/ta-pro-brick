@@ -31,6 +31,7 @@ export interface Challenge {
   askingPrice: number;
   clues: ClueItem[];
   originalUrl?: string;
+  publishDate?: string;
 }
 
 export interface GuessEvaluation {
