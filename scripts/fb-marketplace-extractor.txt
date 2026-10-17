@@ -14,20 +14,10 @@
     existingOverlay.remove();
   }
 
-  // 2. Validação: Certifica-se de que o usuário está na página de UM anúncio específico
+  // 2. Validação de URL do anúncio
   const currentUrl = window.location.href;
-  const isItemPage = currentUrl.includes('/marketplace/item/');
   const currentItemIdMatch = currentUrl.match(/marketplace\/item\/(\d+)/);
   const currentItemId = currentItemIdMatch ? currentItemIdMatch[1] : null;
-
-  if (!isItemPage && !document.querySelector('div[role="dialog"]')) {
-    alert(
-      '⚠️ Tá pro Brick Extrator:\n\n' +
-      'Você ainda está na lista geral de anúncios!\n\n' +
-      '👉 Clique primeiro no anúncio do carro que você escolheu para abrir os detalhes dele (fotos grandes, preço e descrição) e aí sim clique no Extrator.'
-    );
-    return;
-  }
 
   // 3. Expande texto truncado do anúncio ("Ver mais" / "See more")
   function expandTruncatedText(container) {
@@ -39,67 +29,99 @@
           btn.click();
         }
       });
-    } catch (e) {
-      // Continue se o clique falhar
-    }
+    } catch (e) {}
   }
 
-  // 4. Identifica o container exato do anúncio aberto (Modal dialog ou Coluna principal)
-  const dialogEl = document.querySelector('div[role="dialog"]');
-  const mainEl = document.querySelector('div[role="main"]');
-  const activeContainer = dialogEl || mainEl || document.body;
+  // 4. Identifica o container exato do anúncio aberto (NUNCA a janela de Notificações)
+  function findListingContainer() {
+    // Procura em todos os dialogs abertos o que realmente é do anúncio
+    const dialogs = Array.from(document.querySelectorAll('div[role="dialog"]'));
+    for (const d of dialogs) {
+      const text = d.innerText || '';
+      const h1Text = (d.querySelector('h1')?.innerText || '').toLowerCase();
+      // Ignora caixas de notificação, mensagens ou cabeçalho do facebook
+      if (h1Text.includes('notificaç') || h1Text.includes('mensagens') || h1Text.includes('chat')) {
+        continue;
+      }
+      if (text.includes('Descrição do vendedor') || text.includes("Seller's description") || text.includes('Condição') || text.includes('R$')) {
+        return d;
+      }
+    }
 
+    // Se não estiver em um dialog, busca no role="main"
+    const mains = Array.from(document.querySelectorAll('div[role="main"]'));
+    for (const m of mains) {
+      const text = m.innerText || '';
+      if (text.includes('Descrição do vendedor') || text.includes("Seller's description") || text.includes('Condição') || text.includes('R$')) {
+        return m;
+      }
+    }
+
+    // Fallback geral
+    return document.body;
+  }
+
+  const activeContainer = findListingContainer();
   expandTruncatedText(activeContainer);
 
-  // 5. Funções Extratoras Escopadas (Apenas deste anúncio)
+  const containerText = activeContainer.innerText || document.body.innerText || '';
+
+  // 5. Funções Extratoras
 
   // A. URL Limpa
   function extractCleanUrl() {
     return currentUrl.split('?')[0];
   }
 
-  // B. Título
+  // B. Título do Carro (ignora menus como "Notificações")
   function extractTitle() {
-    // Busca o H1 do anúncio aberto
-    const h1 = activeContainer.querySelector('h1');
-    if (h1 && h1.innerText && h1.innerText.trim().length > 3) {
-      return h1.innerText.trim();
+    // 1. Procura primeiro H1 no container do anúncio
+    const h1Candidates = Array.from(activeContainer.querySelectorAll('h1'))
+      .concat(Array.from(document.querySelectorAll('h1')));
+
+    for (const h of h1Candidates) {
+      const text = h.innerText?.trim();
+      if (
+        text &&
+        text.length > 2 &&
+        !/^(notificaç|marketplace|facebook|mensagens|menu|pesquisar|amigos|feed|configuraç)/i.test(text)
+      ) {
+        return text;
+      }
     }
 
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle && ogTitle.content) {
-      const clean = ogTitle.content.replace(/\s*\|\s*Facebook.*$/i, '').trim();
-      if (clean) return clean;
+    // 2. Meta og:title
+    const ogTitle = document.querySelector('meta[property="og:title"]')?.content;
+    if (ogTitle) {
+      const clean = ogTitle.replace(/\s*\|\s*Facebook.*$/i, '').replace(/^Facebook\s*Marketplace:\s*/i, '').trim();
+      if (clean && !/notificaç|marketplace/i.test(clean)) return clean;
     }
 
-    const docTitle = document.title.replace(/\s*\|\s*Facebook.*$/i, '').trim();
-    return docTitle || 'Veículo sem título';
+    // 3. Document Title
+    const docTitle = document.title.replace(/\s*\|\s*Facebook.*$/i, '').replace(/^Facebook\s*Marketplace:\s*/i, '').trim();
+    if (docTitle && !/notificaç|marketplace/i.test(docTitle)) return docTitle;
+
+    return 'Veículo sem título';
   }
 
-  // C. Preço
-  function extractPrice(h1El) {
-    if (h1El) {
-      // Procura primeiro perto do título no container de detalhes
-      const parent = h1El.parentElement?.parentElement || activeContainer;
-      const spans = Array.from(parent.querySelectorAll('span, div, h2, h3'));
-      for (const el of spans) {
-        const txt = el.innerText?.trim();
-        if (txt && /^R\$\s*[\d\.,]+$/i.test(txt)) {
-          const digitsOnly = txt.replace(/[^\d]/g, '');
-          const parsed = parseInt(digitsOnly, 10);
-          if (!isNaN(parsed) && parsed > 500) {
-            return parsed;
-          }
+  // C. Preço (ex: R$8.000 ou R$ 45.000)
+  function extractPrice() {
+    // 1. Procura em elementos específicos de texto
+    const elements = Array.from(activeContainer.querySelectorAll('span, div, h2, h3'));
+    for (const el of elements) {
+      const txt = el.innerText?.trim();
+      if (txt && /^R\$\s*[\d\.,]+$/i.test(txt)) {
+        const parsed = parseInt(txt.replace(/[^\d]/g, ''), 10);
+        if (!isNaN(parsed) && parsed > 500) {
+          return parsed;
         }
       }
     }
 
-    // Fallback: busca padrão R$ dentro do container do anúncio
-    const containerText = activeContainer.innerText || '';
+    // 2. Procura no texto geral
     const match = containerText.match(/R\$\s*([\d\.]+)(?:,\d{2})?/i);
     if (match && match[1]) {
-      const digitsOnly = match[1].replace(/[^\d]/g, '');
-      const parsed = parseInt(digitsOnly, 10);
+      const parsed = parseInt(match[1].replace(/[^\d]/g, ''), 10);
       if (!isNaN(parsed) && parsed > 500) {
         return parsed;
       }
@@ -108,85 +130,64 @@
     return 0;
   }
 
-  // D. Localização
-  function extractLocation() {
+  // D. Tempo Anunciado e Localização
+  function extractTimeAndLocation() {
+    // Padrão combinado: "Anunciado há 5 semanas em Ponta Grossa, PR"
+    const combinedMatch = containerText.match(/(?:Anunciado|Publicado)\s+há\s+([^·\n\r]+?)\s+em\s+([^·\n\r]+)/i);
+    let timePosted = 'Anunciado recentemente';
+    let location = 'Brasil';
+
+    if (combinedMatch) {
+      timePosted = `Anunciado há ${combinedMatch[1].trim()}`;
+      location = combinedMatch[2].trim();
+      return { timePosted, location };
+    }
+
+    // Fallbacks individuais
+    const timeMatch = containerText.match(/(?:Anunciado|Publicado|Listed)\s+há\s+([^·\n\r<]+)/i);
+    if (timeMatch) {
+      timePosted = (timeMatch[0] || '').trim();
+    }
+
     const cityStatePattern = /([A-Za-zÀ-ÿ\s\.\-]+,\s*(?:AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|RJ|RN|RS|RO|RR|SC|SP|SE|TO))/;
-    const elements = Array.from(activeContainer.querySelectorAll('span, div, p'));
-
-    for (const el of elements) {
-      const txt = el.innerText?.trim();
-      if (!txt || txt.length > 80) continue;
-
-      if (txt.includes('Localização aproximada') || txt.includes('Approximate location')) {
-        const match = txt.match(cityStatePattern);
-        if (match) return match[1].trim();
-      }
-
-      if (cityStatePattern.test(txt) && !txt.includes('\n')) {
-        const match = txt.match(cityStatePattern);
-        if (match && match[1].length < 50) {
-          return match[1].trim();
-        }
-      }
+    const locMatch = containerText.match(cityStatePattern);
+    if (locMatch) {
+      location = locMatch[1].trim();
     }
 
-    return 'Brasil';
+    return { timePosted, location };
   }
 
-  // E. Tempo de Publicação
-  function extractTimePosted() {
-    const timeRegex = /(?:Anunciado há|Publicado há|Listed)\s+([^·\n\r<]+)/i;
-    const elements = Array.from(activeContainer.querySelectorAll('span, div'));
-
-    for (const el of elements) {
-      const txt = el.innerText?.trim();
-      if (txt && (txt.includes('Anunciado há') || txt.includes('Publicado há') || txt.includes('Listed'))) {
-        const match = txt.match(timeRegex);
-        if (match) {
-          return (match[0] || '').trim();
-        }
-        return txt;
-      }
-    }
-
-    return 'Anunciado recentemente';
-  }
-
-  // F. Descrição
+  // E. Descrição Completa do Vendedor
   function extractDescription() {
-    const elements = Array.from(activeContainer.querySelectorAll('div, span, section'));
-
-    for (let i = 0; i < elements.length; i++) {
-      const txt = elements[i].innerText?.trim().toLowerCase();
-      if (txt === 'descrição do vendedor' || txt === "seller's description" || txt === 'detalhes do veículo') {
-        const parent = elements[i].parentElement;
-        if (parent) {
-          const contentEl = parent.querySelector('div[dir="auto"], span[dir="auto"]') || parent.nextElementSibling;
-          if (contentEl && contentEl.innerText) {
-            const cleanText = contentEl.innerText.replace(/^(descrição do vendedor|seller's description)\s*/i, '').trim();
-            if (cleanText.length > 5) return cleanText;
-          }
-        }
+    // 1. Procura bloco entre "Descrição do vendedor" e próxima seção
+    const descMatch = containerText.match(/(?:Descrição do vendedor|Seller['']s description)([\s\S]+?)(?:Informações sobre o vendedor|Seller information|Localização aproximada|Detalhes do vendedor|Itens semelhantes|Classificados|$)/i);
+    if (descMatch && descMatch[1]) {
+      const desc = descMatch[1].trim();
+      if (desc.length > 10) {
+        return desc;
       }
     }
 
-    // Fallback: procura elemento com dir="auto" com texto longo no container do anúncio
+    // 2. Elementos com dir="auto"
     const autoDirs = Array.from(activeContainer.querySelectorAll('div[dir="auto"], span[dir="auto"]'));
     for (const el of autoDirs) {
       const text = el.innerText?.trim();
-      if (text && text.length > 30 && (text.includes('\n') || text.length > 80)) {
-        if (!text.includes('Marketplace') && !text.includes('Messenger') && !text.includes('Cookies')) {
-          return text;
-        }
+      if (text && text.length > 40 && !text.includes('Marketplace') && !text.includes('Messenger') && !text.includes('Cookies')) {
+        return text;
       }
     }
 
     return 'Sem descrição fornecida pelo vendedor.';
   }
 
-  // G. Fotos (EXCLUSIVAMENTE DESTE CARRO)
+  // F. Fotos do Veículo
   function extractPhotos() {
-    const images = Array.from(activeContainer.querySelectorAll('img'));
+    let images = Array.from(activeContainer.querySelectorAll('img'));
+    if (images.length === 0 || images.every(img => img.naturalWidth < 100)) {
+      images = Array.from(document.querySelectorAll('img'));
+    }
+
     let photoUrls = [];
     const seenIds = new Set();
 
@@ -208,22 +209,18 @@
 
     images.forEach((img) => {
       const src = img.src || img.getAttribute('data-src') || '';
-      if (!src) return;
+      if (!src || !(src.includes('fbcdn.net') || src.includes('scontent'))) return;
 
-      // 1. Deve ser CDN do Facebook
-      const isFbCdn = src.includes('fbcdn.net') || src.includes('scontent');
-      if (!isFbCdn) return;
-
-      // 2. CRUCIAL: Se a foto estiver dentro de um link para OUTRO anúncio, rejeita!
+      // Rejeita fotos dentro de links para OUTROS anúncios
       const parentLink = img.closest('a[href*="/marketplace/item/"]');
       if (parentLink && currentItemId) {
         const linkHref = parentLink.getAttribute('href') || '';
         if (!linkHref.includes(currentItemId)) {
-          return; // Foto pertence a outro anúncio recomendado!
+          return;
         }
       }
 
-      // 3. Rejeita se estiver dentro de seções de recomendação
+      // Rejeita seções de recomendação
       const parentSection = img.closest('div, section');
       if (parentSection) {
         const sectionText = (parentSection.innerText || '').toLowerCase();
@@ -233,15 +230,14 @@
           sectionText.includes('recomendações') ||
           sectionText.includes('patrocinado')
         ) {
-          // Apenas se o link não for do item atual
           if (parentLink && !parentLink.getAttribute('href')?.includes(currentItemId || '')) {
             return;
           }
         }
       }
 
-      // 4. Rejeita ícones, avatares e emojis
-      const isAvatarOrIcon = 
+      // Filtra fotos de perfil, ícones e emojis
+      const isAvatarOrIcon =
         src.includes('/rsrc.php/') ||
         src.includes('/emoji.php/') ||
         src.includes('p50x50') ||
@@ -251,11 +247,7 @@
         (img.alt && /perfil|profile|avatar|ícone|icon|emoji/i.test(img.alt));
 
       if (isAvatarOrIcon) return;
-
-      // 5. Rejeita imagens muito pequenas se já estiverem renderizadas
-      if (img.naturalWidth > 0 && (img.naturalWidth < 120 || img.naturalHeight < 120)) {
-        return;
-      }
+      if (img.naturalWidth > 0 && (img.naturalWidth < 100 || img.naturalHeight < 100)) return;
 
       const imgId = getImageId(src);
       if (!seenIds.has(imgId)) {
@@ -267,18 +259,16 @@
     return photoUrls;
   }
 
-  // 6. Executa a extração deste anúncio único
-  const h1El = activeContainer.querySelector('h1');
-  let currentPhotos = extractPhotos();
-  
+  // 6. Monta o Objeto de Extração
+  const timeAndLoc = extractTimeAndLocation();
   const extracted = {
     title: extractTitle(),
-    price: extractPrice(h1El),
-    location: extractLocation(),
-    timePosted: extractTimePosted(),
+    price: extractPrice(),
+    location: timeAndLoc.location,
+    timePosted: timeAndLoc.timePosted,
     description: extractDescription(),
     originalUrl: extractCleanUrl(),
-    photos: currentPhotos,
+    photos: extractPhotos(),
     authorizationNotes: 'Anúncio verificado no Facebook Marketplace',
   };
 
@@ -310,7 +300,7 @@
     border: 1px solid #3f3f46;
     border-radius: 18px;
     width: 100%;
-    max-width: 600px;
+    max-width: 620px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -322,12 +312,12 @@
     const priceFormatted = extracted.price > 0 ? `R$ ${extracted.price.toLocaleString('pt-BR')}` : 'Não detectado';
 
     const photoThumbnails = extracted.photos.map((url, idx) => `
-      <div style="position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: #27272a; flex-shrink: 0; border: 1px solid #3f3f46;">
+      <div style="position: relative; width: 68px; height: 68px; border-radius: 10px; overflow: hidden; background: #27272a; flex-shrink: 0; border: 1px solid #3f3f46;">
         <img src="${url}" style="width: 100%; height: 100%; object-fit: cover;" alt="Foto ${idx + 1}" />
         <span style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.75); font-size: 9px; text-align: center; color: #f59e0b; font-weight: bold;">
-          ${idx === 0 ? 'Capa' : `#${idx + 1}`}
+          ${idx === 0 ? 'Capa' : '#' + (idx + 1)}
         </span>
-        <button class="tpb-del-photo" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: rgba(0,0,0,0.8); color: #fff; border: none; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+        <button class="tpb-del-photo" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; background: rgba(0,0,0,0.85); color: #fff; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
       </div>
     `).join('');
 
@@ -335,7 +325,7 @@
       <!-- Header -->
       <div style="padding: 16px 20px; border-bottom: 1px solid #27272a; display: flex; align-items: center; justify-content: space-between; background: #121215;">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="background: #f59e0b; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #000;">
+          <div style="background: #f59e0b; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #000;">
             🧱
           </div>
           <div>
@@ -343,7 +333,7 @@
             <p style="margin: 0; font-size: 12px; color: #a1a1aa;">Pronto para importar no Tá pro Brick</p>
           </div>
         </div>
-        <button id="tpb-close-btn" style="background: transparent; border: none; color: #a1a1aa; font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 6px;">✕</button>
+        <button id="tpb-close-btn" style="background: transparent; border: none; color: #a1a1aa; font-size: 20px; cursor: pointer; padding: 4px 8px;">✕</button>
       </div>
 
       <!-- Content -->
@@ -381,7 +371,7 @@
         <!-- Descrição -->
         <div>
           <div style="font-size: 12px; font-weight: 700; color: #e4e4e7; margin-bottom: 6px;">Descrição do Anúncio</div>
-          <div style="background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 10px; font-size: 12px; color: #d4d4d8; max-height: 90px; overflow-y: auto; white-space: pre-wrap; line-height: 1.4;">${extracted.description}</div>
+          <div style="background: #18181b; border: 1px solid #27272a; border-radius: 8px; padding: 10px; font-size: 12px; color: #d4d4d8; max-height: 110px; overflow-y: auto; white-space: pre-wrap; line-height: 1.4;">${extracted.description}</div>
         </div>
       </div>
 
@@ -419,12 +409,6 @@
         const json = JSON.stringify(extracted, null, 2);
         try {
           await navigator.clipboard.writeText(json);
-          copyBtn.style.background = '#10b981';
-          copyBtn.style.color = '#ffffff';
-          copyBtn.innerHTML = '<span>✓</span> Copiado para a Área de Transferência!';
-          setTimeout(() => {
-            closeModal();
-          }, 1200);
         } catch (err) {
           const ta = document.createElement('textarea');
           ta.value = json;
@@ -432,13 +416,13 @@
           ta.select();
           document.execCommand('copy');
           document.body.removeChild(ta);
-          copyBtn.style.background = '#10b981';
-          copyBtn.style.color = '#ffffff';
-          copyBtn.innerHTML = '<span>✓</span> Copiado!';
-          setTimeout(() => {
-            closeModal();
-          }, 1200);
         }
+        copyBtn.style.background = '#10b981';
+        copyBtn.style.color = '#ffffff';
+        copyBtn.innerHTML = '<span>✓</span> Copiado para a Área de Transferência!';
+        setTimeout(() => {
+          closeModal();
+        }, 1200);
       });
     }
   }
