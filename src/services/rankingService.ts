@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase';
-import { getOrCreatePlayerProfile } from './playerService';
+import { getOrCreatePlayerProfile, syncPlayerProfileToSupabase } from './playerService';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -83,9 +83,12 @@ export async function submitDailyResult(params: SubmitResultParams): Promise<voi
   // 2. Se Supabase estiver conectado, gravar no banco
   if (isSupabaseConfigured() && supabase) {
     try {
-      await supabase.from('daily_results').upsert(
+      // Garante primeiro que o perfil do jogador existe na tabela 'players'
+      await syncPlayerProfileToSupabase(profile);
+
+      const { error } = await supabase.from('daily_results').upsert(
         {
-          challenge_id: params.challengeId,
+          challenge_id: String(params.challengeId),
           player_id: profile.id,
           score: params.score,
           attempts_count: params.attemptsCount,
@@ -95,8 +98,12 @@ export async function submitDailyResult(params: SubmitResultParams): Promise<voi
         },
         { onConflict: 'challenge_id,player_id' }
       );
+
+      if (error) {
+        console.error('Erro ao enviar daily_results para o Supabase:', error);
+      }
     } catch (err) {
-      console.warn('Erro ao sincronizar resultado com Supabase:', err);
+      console.warn('Erro inesperado ao sincronizar resultado com Supabase:', err);
     }
   }
 }

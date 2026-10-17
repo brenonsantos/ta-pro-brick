@@ -5,7 +5,7 @@ create extension if not exists "uuid-ossp";
 
 -- 2. Tabela de Desafios Diários
 create table if not exists public.challenges (
-  id uuid primary key default uuid_generate_v4(),
+  id text primary key default uuid_generate_v4()::text,
   publish_date date not null unique,
   title text not null,
   price numeric not null,
@@ -24,7 +24,7 @@ create index if not exists idx_challenges_publish_date on public.challenges (pub
 
 -- 3. Tabela de Jogadores (Anônimos ou Autenticados)
 create table if not exists public.players (
-  id uuid primary key default uuid_generate_v4(),
+  id text primary key default uuid_generate_v4()::text,
   auth_id uuid references auth.users(id) on delete set null,
   nickname text not null,
   is_anonymous boolean not null default true,
@@ -38,8 +38,8 @@ create index if not exists idx_players_auth_id on public.players (auth_id);
 -- 4. Tabela de Resultados Diários (Submissões de Palpites/Rodadas)
 create table if not exists public.daily_results (
   id uuid primary key default uuid_generate_v4(),
-  challenge_id uuid not null references public.challenges(id) on delete cascade,
-  player_id uuid not null references public.players(id) on delete cascade,
+  challenge_id text not null,
+  player_id text not null references public.players(id) on delete cascade,
   score integer not null,
   attempts_count integer not null,
   best_guess numeric,

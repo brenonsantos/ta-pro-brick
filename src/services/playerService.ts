@@ -29,12 +29,35 @@ export function generateRandomNickname(): string {
   return `${prefix} #${num}`;
 }
 
+export async function syncPlayerProfileToSupabase(profile: PlayerProfile): Promise<void> {
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { error } = await supabase
+        .from('players')
+        .upsert({
+          id: profile.id,
+          nickname: profile.nickname,
+          is_anonymous: profile.isAnonymous,
+          avatar_url: profile.avatarUrl || null,
+          updated_at: new Date().toISOString(),
+        });
+      if (error) {
+        console.warn('Aviso ao sincronizar perfil com Supabase:', error.message);
+      }
+    } catch (err) {
+      console.warn('Falha de rede ao sincronizar perfil:', err);
+    }
+  }
+}
+
 export function getOrCreatePlayerProfile(): PlayerProfile {
   try {
     const saved = localStorage.getItem(PLAYER_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed.id && parsed.nickname) {
+        // Garante sincronização em background para perfis existentes
+        syncPlayerProfileToSupabase(parsed);
         return parsed;
       }
     }
@@ -54,18 +77,7 @@ export function getOrCreatePlayerProfile(): PlayerProfile {
     // Ignore error
   }
 
-  // Se Supabase estiver conectado, salvar no banco em background
-  if (isSupabaseConfigured() && supabase) {
-    supabase
-      .from('players')
-      .upsert({
-        id: newProfile.id,
-        nickname: newProfile.nickname,
-        is_anonymous: true,
-        updated_at: new Date().toISOString(),
-      })
-      .then(() => {});
-  }
+  syncPlayerProfileToSupabase(newProfile);
 
   return newProfile;
 }
