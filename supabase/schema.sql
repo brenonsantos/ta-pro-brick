@@ -104,7 +104,35 @@ create policy "Resultados são públicos para ranking"
   on public.daily_results for select
   using (true);
 
--- Jogador pode inserir seu resultado diário
+-- Jogador pode inserir ou atualizar seu resultado diário (necessário para upsert)
 create policy "Jogadores podem registrar resultado"
   on public.daily_results for insert
   with check (true);
+
+create policy "Jogadores podem atualizar resultado"
+  on public.daily_results for update
+  using (true)
+  with check (true);
+
+create policy "Resultados podem ser deletados"
+  on public.daily_results for delete
+  using (true);
+
+-- Políticas de Challenges (Gerenciamento no Painel de Curadoria):
+create policy "Desafios podem ser criados"
+  on public.challenges for insert
+  with check (true);
+
+create policy "Desafios podem ser atualizados"
+  on public.challenges for update
+  using (true)
+  with check (true);
+
+create policy "Desafios podem ser deletados"
+  on public.challenges for delete
+  using (true);
+
+create policy "Jogadores podem ser deletados"
+  on public.players for delete
+  using (true);
+
