@@ -37,6 +37,7 @@ export async function syncPlayerProfileToSupabase(profile: PlayerProfile): Promi
         .upsert(
           {
             id: profile.id,
+            auth_id: profile.authId || null,
             nickname: profile.nickname,
             is_anonymous: profile.isAnonymous,
             avatar_url: profile.avatarUrl || null,
@@ -134,8 +135,105 @@ export async function signInWithGoogle(): Promise<{ error?: string }> {
   return {};
 }
 
-export async function signOutPlayer(): Promise<void> {
+export async function signOutPlayer(): Promise<PlayerProfile> {
   if (isSupabaseConfigured() && supabase) {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignore
+    }
   }
+  const current = getOrCreatePlayerProfile();
+  const resetProfile: PlayerProfile = {
+    ...current,
+    authId: null,
+    isAnonymous: true,
+    avatarUrl: null,
+  };
+  try {
+    localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(resetProfile));
+  } catch {
+    // Ignore
+  }
+  return resetProfile;
+}
+
+export function initAuthListener(onProfileChange?: (profile: PlayerProfile) => void): () => void {
+  if (!isSupabaseConfigured() || !supabase) {
+    return () => {};
+  }
+
+  const client = supabase;
+
+  const {
+    data: { subscription },
+  } = client.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session?.user) {
+      let current = getOrCreatePlayerProfile();
+      try {
+        const { data: existingPlayer } = await client
+          .from('players')
+          .select('*')
+          .eq('auth_id', session.user.id)
+          .maybeSingle();
+
+        if (existingPlayer) {
+          current = {
+            id: existingPlayer.id,
+            authId: existingPlayer.auth_id,
+            nickname: existingPlayer.nickname || current.nickname,
+            isAnonymous: false,
+            avatarUrl: existingPlayer.avatar_url || session.user.user_metadata?.avatar_url || null,
+          };
+        } else {
+          current = {
+            ...current,
+            authId: session.user.id,
+            isAnonymous: false,
+            avatarUrl: session.user.user_metadata?.avatar_url || null,
+          };
+        }
+
+        try {
+          localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(current));
+        } catch {
+          // Ignore
+        }
+
+        await client.from('players').upsert(
+          {
+            id: current.id,
+            auth_id: current.authId,
+            nickname: current.nickname,
+            is_anonymous: false,
+            avatar_url: current.avatarUrl,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
+
+        onProfileChange?.(current);
+      } catch (err) {
+        console.warn('Erro ao processar login com Google:', err);
+      }
+    } else if (event === 'SIGNED_OUT') {
+      const current = getOrCreatePlayerProfile();
+      const reset: PlayerProfile = {
+        ...current,
+        authId: null,
+        isAnonymous: true,
+        avatarUrl: null,
+      };
+      try {
+        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(reset));
+      } catch {
+        // Ignore
+      }
+      onProfileChange?.(reset);
+    }
+  });
+
+  return () => {
+    subscription.unsubscribe();
+  };
 }

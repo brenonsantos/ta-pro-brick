@@ -15,7 +15,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { ContactModal } from './components/ContactModal';
 import { AdBannerSlot } from './components/AdBannerSlot';
 import { submitDailyResult } from './services/rankingService';
-import { getOrCreatePlayerProfile, syncPlayerProfileToSupabase } from './services/playerService';
+import { getOrCreatePlayerProfile, syncPlayerProfileToSupabase, initAuthListener } from './services/playerService';
 import { trackEvent } from './services/analyticsService';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
@@ -168,7 +168,10 @@ export function App() {
     const profile = getOrCreatePlayerProfile();
     syncPlayerProfileToSupabase(profile);
 
-    // 2. Sincroniza qualquer desafio que já tenha sido concluído localmente (inclusive desafios de dias anteriores salvos)
+    // 2. Escuta mudanças na sessão de autenticação (ex: retorno do login com Google)
+    const unsubscribeAuth = initAuthListener();
+
+    // 3. Sincroniza qualquer desafio que já tenha sido concluído localmente (inclusive desafios de dias anteriores salvos)
     Object.entries(gameStates).forEach(([chId, state]) => {
       if (state && state.status === 'completed' && state.guesses && state.guesses.length > 0) {
         const remaining = state.maxAttempts - state.guesses.length;
@@ -183,6 +186,10 @@ export function App() {
         });
       }
     });
+
+    return () => {
+      unsubscribeAuth();
+    };
   }, [dailyChallenge.id]);
 
   const handleCloseHelp = () => {
