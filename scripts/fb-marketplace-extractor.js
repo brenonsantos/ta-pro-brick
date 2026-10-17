@@ -163,7 +163,8 @@
     // 1. Procura bloco entre "Descrição do vendedor" e próxima seção
     const descMatch = containerText.match(/(?:Descrição do vendedor|Seller['']s description)([\s\S]+?)(?:Informações sobre o vendedor|Seller information|Localização aproximada|Detalhes do vendedor|Itens semelhantes|Classificados|$)/i);
     if (descMatch && descMatch[1]) {
-      const desc = descMatch[1].trim();
+      let desc = descMatch[1].trim();
+      desc = desc.replace(/\s*(?:Ver menos|See less)[\s\S]*$/i, '').trim();
       if (desc.length > 10) {
         return desc;
       }
@@ -172,8 +173,9 @@
     // 2. Elementos com dir="auto"
     const autoDirs = Array.from(activeContainer.querySelectorAll('div[dir="auto"], span[dir="auto"]'));
     for (const el of autoDirs) {
-      const text = el.innerText?.trim();
+      let text = el.innerText?.trim();
       if (text && text.length > 40 && !text.includes('Marketplace') && !text.includes('Messenger') && !text.includes('Cookies')) {
+        text = text.replace(/\s*(?:Ver menos|See less)[\s\S]*$/i, '').trim();
         return text;
       }
     }
