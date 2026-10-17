@@ -15,6 +15,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { ContactModal } from './components/ContactModal';
 import { AdBannerSlot } from './components/AdBannerSlot';
 import { submitDailyResult } from './services/rankingService';
+import { getOrCreatePlayerProfile, syncPlayerProfileToSupabase } from './services/playerService';
 import { trackEvent } from './services/analyticsService';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
@@ -161,21 +162,27 @@ export function App() {
     gameStates[activeChallenge.id] || createInitialGameState(activeChallenge);
   const isDailyCompleted = gameStates[dailyChallenge.id]?.status === 'completed';
 
-  // Se o desafio diário já foi concluído localmente, sincroniza automaticamente com o Supabase
+  // Sincroniza o perfil do jogador e todos os desafios já concluídos localmente com o Supabase
   useEffect(() => {
-    const dailyState = gameStates[dailyChallenge.id];
-    if (dailyState && dailyState.status === 'completed') {
-      const remaining = dailyState.maxAttempts - dailyState.guesses.length;
-      const score = calculateScore(dailyState.guesses, remaining, GAME_CONFIG);
-      const isWin = score.bestGuess?.isWin ?? false;
-      submitDailyResult({
-        challengeId: dailyChallenge.id,
-        score: score.totalScore,
-        attemptsCount: dailyState.guesses.length,
-        bestGuess: score.bestGuess?.guessValue || null,
-        won: isWin,
-      });
-    }
+    // 1. Assegura que o perfil do jogador existe no Supabase
+    const profile = getOrCreatePlayerProfile();
+    syncPlayerProfileToSupabase(profile);
+
+    // 2. Sincroniza qualquer desafio que já tenha sido concluído localmente (inclusive desafios de dias anteriores salvos)
+    Object.entries(gameStates).forEach(([chId, state]) => {
+      if (state && state.status === 'completed' && state.guesses && state.guesses.length > 0) {
+        const remaining = state.maxAttempts - state.guesses.length;
+        const score = calculateScore(state.guesses, remaining, GAME_CONFIG);
+        const isWin = score.bestGuess?.isWin ?? false;
+        submitDailyResult({
+          challengeId: chId,
+          score: score.totalScore,
+          attemptsCount: state.guesses.length,
+          bestGuess: score.bestGuess?.guessValue || null,
+          won: isWin,
+        });
+      }
+    });
   }, [dailyChallenge.id]);
 
   const handleCloseHelp = () => {
