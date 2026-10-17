@@ -202,79 +202,99 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               </p>
             </div>
           ) : activeTab === 'daily' ? (
-            dailyEntries.map((entry) => (
-              <div
-                key={entry.playerId}
-                className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition border ${
-                  entry.isCurrentPlayer
-                    ? 'border-amber-500/50 bg-amber-500/10 shadow-sm'
-                    : 'border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="flex h-7 w-7 items-center justify-center shrink-0">
-                    {getRankBadge(entry.rank)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-1.5">
-                      {entry.nickname}
-                      {entry.isCurrentPlayer && (
-                        <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
-                          Você
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-[10px] text-zinc-400">
-                      {entry.won ? `${entry.attemptsCount}º chute • ${entry.completedAt}` : 'Não acertou'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <span className="text-sm sm:text-base font-black text-amber-400">
-                    {entry.score.toLocaleString('pt-BR')}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 ml-1 font-bold">pts</span>
-                </div>
+            dailyEntries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center p-8 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 my-4">
+                <Trophy className="h-8 w-8 text-zinc-600 mb-2" />
+                <h3 className="text-sm font-bold text-white">Nenhum resultado registrado ainda hoje</h3>
+                <p className="text-xs text-zinc-400 mt-1 max-w-[260px]">
+                  Termine o desafio do dia para cravar sua pontuação e assumir a liderança!
+                </p>
               </div>
-            ))
+            ) : (
+              dailyEntries.map((entry) => (
+                <div
+                  key={entry.playerId}
+                  className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition border ${
+                    entry.isCurrentPlayer
+                      ? 'border-amber-500/50 bg-amber-500/10 shadow-sm'
+                      : 'border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex h-7 w-7 items-center justify-center shrink-0">
+                      {getRankBadge(entry.rank)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-1.5">
+                        {entry.nickname}
+                        {entry.isCurrentPlayer && (
+                          <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
+                            Você
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-zinc-400">
+                        {entry.won ? `${entry.attemptsCount}º chute • ${entry.completedAt}` : 'Não acertou'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-sm sm:text-base font-black text-amber-400">
+                      {entry.score.toLocaleString('pt-BR')}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 ml-1 font-bold">pts</span>
+                  </div>
+                </div>
+              ))
+            )
           ) : (
-            allTimeEntries.map((entry) => (
-              <div
-                key={entry.playerId}
-                className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition border ${
-                  entry.isCurrentPlayer
-                    ? 'border-amber-500/50 bg-amber-500/10 shadow-sm'
-                    : 'border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80'
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="flex h-7 w-7 items-center justify-center shrink-0">
-                    {getRankBadge(entry.rank)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-1.5">
-                      {entry.nickname}
-                      {entry.isCurrentPlayer && (
-                        <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
-                          Você
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-[10px] text-zinc-400">
-                      {entry.gamesWon} vitórias em {entry.gamesPlayed} jogos
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right shrink-0">
-                  <span className="text-sm sm:text-base font-black text-amber-400">
-                    {entry.totalScore.toLocaleString('pt-BR')}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 ml-1 font-bold">pts</span>
-                </div>
+            allTimeEntries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center text-center p-8 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 my-4">
+                <Trophy className="h-8 w-8 text-zinc-600 mb-2" />
+                <h3 className="text-sm font-bold text-white">Nenhuma pontuação acumulada ainda</h3>
+                <p className="text-xs text-zinc-400 mt-1 max-w-[260px]">
+                  Conclua os desafios diários para acumular pontos no ranking geral de pilotos!
+                </p>
               </div>
-            ))
+            ) : (
+              allTimeEntries.map((entry) => (
+                <div
+                  key={entry.playerId}
+                  className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition border ${
+                    entry.isCurrentPlayer
+                      ? 'border-amber-500/50 bg-amber-500/10 shadow-sm'
+                      : 'border-zinc-850 bg-zinc-900/40 hover:bg-zinc-900/80'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex h-7 w-7 items-center justify-center shrink-0">
+                      {getRankBadge(entry.rank)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-1.5">
+                        {entry.nickname}
+                        {entry.isCurrentPlayer && (
+                          <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
+                            Você
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-[10px] text-zinc-400">
+                        {entry.gamesWon} vitórias em {entry.gamesPlayed} jogos
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <span className="text-sm sm:text-base font-black text-amber-400">
+                      {entry.totalScore.toLocaleString('pt-BR')}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 ml-1 font-bold">pts</span>
+                  </div>
+                </div>
+              ))
+            )
           )}
         </div>
 

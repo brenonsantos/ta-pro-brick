@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
-  Send,
   ShieldAlert,
   Mail,
   Car,
-  Check,
-  Copy,
   ExternalLink,
   Cookie,
   ShieldCheck,
@@ -60,6 +57,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   const [removeChallenge, setRemoveChallenge] = useState('');
   const [removeEmail, setRemoveEmail] = useState('');
   const [removeReason, setRemoveReason] = useState('');
+  const [copiedRemoval, setCopiedRemoval] = useState(false);
 
   if (!isOpen) return null;
 
@@ -76,15 +74,22 @@ export const ContactModal: React.FC<ContactModalProps> = ({
     window.open(`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`, '_blank');
   };
 
-  const handleCopySuggestion = () => {
+  const handleSendSuggestionInstagram = () => {
     const text =
-      `Sugestão para o Tá pro Brick:\n` +
-      `Carro: ${suggestModel}\n` +
-      `Link: ${suggestUrl}\n` +
-      `Obs: ${suggestNotes}`;
-    navigator.clipboard.writeText(text);
+      `Fala galera do @${INSTAGRAM_HANDLE}!\n` +
+      `Sugestão de anúncio pro Tá pro Brick:\n` +
+      `Link: ${suggestUrl || '(não informado)'}\n` +
+      (suggestModel ? `Modelo: ${suggestModel}\n` : '') +
+      (suggestNotes ? `Obs: ${suggestNotes}\n` : '');
+
+    try {
+      navigator.clipboard.writeText(text);
+    } catch {
+      // ignore
+    }
     setCopiedSuggest(true);
-    setTimeout(() => setCopiedSuggest(false), 2000);
+    setTimeout(() => setCopiedSuggest(false), 2500);
+    window.open(`https://ig.me/m/${INSTAGRAM_HANDLE}`, '_blank');
   };
 
   const handleSendRemoval = () => {
@@ -98,6 +103,24 @@ export const ContactModal: React.FC<ContactModalProps> = ({
       `Aguardo retorno e remoção conforme termos do jogo.`
     );
     window.open(`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+  };
+
+  const handleSendRemovalInstagram = () => {
+    const text =
+      `Olá @${INSTAGRAM_HANDLE},\n` +
+      `Gostaria de solicitar a remoção de um anúncio do Tá pro Brick:\n` +
+      `Desafio/Veículo: ${removeChallenge || '(não informado)'}\n` +
+      `Contato: ${removeEmail || '(não informado)'}\n` +
+      (removeReason ? `Motivo: ${removeReason}\n` : '');
+
+    try {
+      navigator.clipboard.writeText(text);
+    } catch {
+      // ignore
+    }
+    setCopiedRemoval(true);
+    setTimeout(() => setCopiedRemoval(false), 2500);
+    window.open(`https://ig.me/m/${INSTAGRAM_HANDLE}`, '_blank');
   };
 
   return (
@@ -212,23 +235,23 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 />
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={handleSendSuggestion}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-amber-500 py-2.5 text-xs font-black text-black hover:bg-amber-400 transition cursor-pointer shadow-md shadow-amber-500/20"
+                  onClick={handleSendSuggestionInstagram}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 py-2.5 text-xs font-black text-white hover:opacity-95 transition cursor-pointer shadow-md"
+                  title="Copia a sugestão e abre o Instagram Direct"
                 >
-                  <Send className="h-3.5 w-3.5" />
-                  Enviar por E-mail
+                  <InstagramIcon className="h-4 w-4" />
+                  {copiedSuggest ? 'Copiado! Abrindo Direct...' : 'Enviar por Instagram'}
                 </button>
                 <button
                   type="button"
-                  onClick={handleCopySuggestion}
-                  className="flex items-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-xs font-bold text-zinc-300 hover:text-white transition cursor-pointer"
-                  title="Copiar texto para enviar no Instagram"
+                  onClick={handleSendSuggestion}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
                 >
-                  {copiedSuggest ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-                  <span>{copiedSuggest ? 'Copiado!' : 'Copiar'}</span>
+                  <Mail className="h-3.5 w-3.5" />
+                  Enviar por E-mail
                 </button>
               </div>
             </div>
@@ -288,14 +311,25 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 />
               </div>
 
-              <button
-                type="button"
-                onClick={handleSendRemoval}
-                className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white hover:bg-rose-500 transition cursor-pointer shadow-md shadow-rose-600/20"
-              >
-                <ShieldAlert className="h-4 w-4" />
-                Solicitar Remoção Imediata
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleSendRemovalInstagram}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
+                  title="Copia a solicitação e abre o Instagram Direct"
+                >
+                  <InstagramIcon className="h-4 w-4 text-rose-400" />
+                  {copiedRemoval ? 'Copiado! Abrindo Direct...' : 'Pedir pelo Instagram'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSendRemoval}
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white hover:bg-rose-500 transition cursor-pointer shadow-md shadow-rose-600/20"
+                >
+                  <ShieldAlert className="h-4 w-4" />
+                  Solicitar por E-mail
+                </button>
+              </div>
             </div>
           )}
 

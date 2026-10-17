@@ -53,63 +53,7 @@ function saveLocalLeaderboardStore(store: LocalResultStorage): void {
   }
 }
 
-// Gera pilotos simulados realistas para enriquecer o ranking no teste local
-function getSimulatedDailyEntries(challengeId: string): LeaderboardEntry[] {
-  // Determinístico baseado no challengeId
-  const seed = challengeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return [
-    {
-      rank: 0,
-      playerId: 'sim-1',
-      nickname: 'Piloto Turbo #450',
-      score: 1250 + (seed % 150),
-      attemptsCount: 1,
-      won: true,
-      isCurrentPlayer: false,
-      completedAt: '08:14',
-    },
-    {
-      rank: 0,
-      playerId: 'sim-2',
-      nickname: 'Garagem do Zé #210',
-      score: 1100 + (seed % 80),
-      attemptsCount: 2,
-      won: true,
-      isCurrentPlayer: false,
-      completedAt: '09:30',
-    },
-    {
-      rank: 0,
-      playerId: 'sim-3',
-      nickname: 'Opala 6cc #602',
-      score: 950 + (seed % 90),
-      attemptsCount: 3,
-      won: true,
-      isCurrentPlayer: false,
-      completedAt: '10:05',
-    },
-    {
-      rank: 0,
-      playerId: 'sim-4',
-      nickname: 'Chevetteiro #104',
-      score: 820 + (seed % 60),
-      attemptsCount: 4,
-      won: true,
-      isCurrentPlayer: false,
-      completedAt: '11:42',
-    },
-    {
-      rank: 0,
-      playerId: 'sim-5',
-      nickname: 'Fusca 1974 #311',
-      score: 650 + (seed % 50),
-      attemptsCount: 5,
-      won: true,
-      isCurrentPlayer: false,
-      completedAt: '12:15',
-    },
-  ];
-}
+
 
 export async function submitDailyResult(params: SubmitResultParams): Promise<void> {
   const profile = getOrCreatePlayerProfile();
@@ -198,29 +142,26 @@ export async function getDailyLeaderboard(challengeId: string): Promise<Leaderbo
     }
   }
 
-  // Fallback Local + Simulados
+  // Fallback Local: apenas resultados reais registrados
   const store = getLocalLeaderboardStore();
   const localList = store[challengeId] || [];
-  const simulated = getSimulatedDailyEntries(challengeId);
 
-  // Combinar removendo duplicatas se o jogador já tiver submetido
-  const combined = [...simulated];
-  const playerResult = localList.find((e) => e.playerId === profile.id);
-  if (playerResult) {
-    playerResult.nickname = profile.nickname; // Mantém nome atualizado
-    playerResult.isCurrentPlayer = true;
-    combined.push(playerResult);
-  }
+  // Mapear entradas identificando o jogador atual e garantindo apelido mais recente
+  const entries = localList.map((entry) => ({
+    ...entry,
+    isCurrentPlayer: entry.playerId === profile.id,
+    nickname: entry.playerId === profile.id ? profile.nickname : entry.nickname,
+  }));
 
   // Ordenar por:
   // 1. Pontuação (descendente - mais pontos primeiro)
   // 2. Número de tentativas (ascendente - menos tentativas desempata)
-  combined.sort((a, b) => {
+  entries.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return a.attemptsCount - b.attemptsCount;
   });
 
-  return combined.map((entry, index) => ({
+  return entries.map((entry, index) => ({
     ...entry,
     rank: index + 1,
   }));
@@ -252,7 +193,7 @@ export async function getAllTimeLeaderboard(): Promise<AllTimeLeaderboardEntry[]
     }
   }
 
-  // Fallback local: calcula a partir dos resultados locais salvos
+  // Fallback local: calcula a partir dos resultados reais locais salvos
   const store = getLocalLeaderboardStore();
   let localTotalScore = 0;
   let localGamesPlayed = 0;
@@ -267,16 +208,11 @@ export async function getAllTimeLeaderboard(): Promise<AllTimeLeaderboardEntry[]
     }
   });
 
-  const baseMocks: AllTimeLeaderboardEntry[] = [
-    { rank: 0, playerId: 'm1', nickname: 'Ayrton do Asfalto #100', totalScore: 4850, gamesPlayed: 4, gamesWon: 4, isCurrentPlayer: false },
-    { rank: 0, playerId: 'm2', nickname: 'Garagem do Zé #210', totalScore: 4120, gamesPlayed: 4, gamesWon: 4, isCurrentPlayer: false },
-    { rank: 0, playerId: 'm3', nickname: 'Opala 6cc #602', totalScore: 3680, gamesPlayed: 4, gamesWon: 3, isCurrentPlayer: false },
-    { rank: 0, playerId: 'm4', nickname: 'Piloto Turbo #450', totalScore: 3250, gamesPlayed: 3, gamesWon: 3, isCurrentPlayer: false },
-  ];
+  const realEntries: AllTimeLeaderboardEntry[] = [];
 
   if (localGamesPlayed > 0) {
-    baseMocks.push({
-      rank: 0,
+    realEntries.push({
+      rank: 1,
       playerId: profile.id,
       nickname: profile.nickname,
       totalScore: localTotalScore,
@@ -286,10 +222,5 @@ export async function getAllTimeLeaderboard(): Promise<AllTimeLeaderboardEntry[]
     });
   }
 
-  baseMocks.sort((a, b) => b.totalScore - a.totalScore);
-
-  return baseMocks.map((entry, index) => ({
-    ...entry,
-    rank: index + 1,
-  }));
+  return realEntries;
 }

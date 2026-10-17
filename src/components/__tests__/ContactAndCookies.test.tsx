@@ -22,6 +22,8 @@ describe('CookieBanner, ContactModal e AdBannerSlot', () => {
     );
     expect(html).toContain('Sugerir');
     expect(html).toContain('Link do Anúncio');
+    expect(html).toContain('Enviar por Instagram');
+    expect(html).toContain('Enviar por E-mail');
   });
 
   it('renderiza ContactModal na aba de remover anúncio', () => {
@@ -33,7 +35,8 @@ describe('CookieBanner, ContactModal e AdBannerSlot', () => {
       })
     );
     expect(html).toContain('Compromisso de Respeito aos Proprietários');
-    expect(html).toContain('Solicitar Remoção Imediata');
+    expect(html).toContain('Pedir pelo Instagram');
+    expect(html).toContain('Solicitar por E-mail');
   });
 
   it('renderiza ContactModal na aba de redes e contato', () => {

@@ -211,3 +211,25 @@ Refine the UI per user instruction:
   - Verify all 36 tests pass with `npm test`.
   - Verify production build with `npm run build`.
 
+---
+
+## Milestone 10: Limpeza de Mocks do Ranking & Envio via Instagram nas Abas de Contato
+### Objective
+1. Remove all mock/simulated pilot entries from the local leaderboard so only real player entries appear.
+2. Provide elegant empty states in `LeaderboardModal` when no player has logged a score yet.
+3. In `ContactModal`, add direct Instagram action buttons in "Sugerir Anúncio" and "Remover Anúncio", pre-formatting the message and launching Instagram Direct.
+
+### Tasks
+- [x] **Clean Mock Pilots from `rankingService.ts`**:
+  - Remove `getSimulatedDailyEntries` and hardcoded `baseMocks`.
+  - Local leaderboard only returns entries actually recorded in the store.
+- [x] **Empty States in `LeaderboardModal.tsx`**:
+  - Add friendly empty states when `dailyEntries.length === 0` or `allTimeEntries.length === 0`.
+- [x] **Instagram Direct Action in `ContactModal.tsx`**:
+  - Add "Enviar por Instagram" in Tab 1 (Sugerir Anúncio).
+  - Add "Solicitar via Instagram" in Tab 2 (Remover Anúncio).
+- [x] **Validation & Verification**:
+  - Update unit tests in `rankingService.test.ts` and `ContactAndCookies.test.tsx`.
+  - Run `npm test` (36/36 passing) and `npm run build` (0 errors).
+
+
