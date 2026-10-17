@@ -15,6 +15,7 @@ import { CookieBanner } from './components/CookieBanner';
 import { ContactModal } from './components/ContactModal';
 import { AdBannerSlot } from './components/AdBannerSlot';
 import { submitDailyResult } from './services/rankingService';
+import { trackEvent } from './services/analyticsService';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
 import { GAME_CONFIG } from './config/gameConfig';
@@ -183,6 +184,11 @@ export function App() {
       dailyChallengeNumber
     );
 
+    trackEvent('share_result', {
+      challengeId: dailyChallenge.id,
+      dayNumber: dailyChallengeNumber,
+    });
+
     try {
       if (navigator.clipboard) {
         await navigator.clipboard.writeText(text);
@@ -218,6 +224,12 @@ export function App() {
     const updatedGuesses = [...currentGameState.guesses, evaluation];
     const newRemainingAttempts = currentGameState.maxAttempts - updatedGuesses.length;
 
+    trackEvent('guess_attempt', {
+      attemptNumber: updatedGuesses.length,
+      heatBand: evaluation.heatBand,
+      challengeId: activeChallenge.id,
+    });
+
     let nextStatus: RoundStatus = 'in_progress';
 
     if (evaluation.heatBand === 'exact') {
@@ -250,6 +262,13 @@ export function App() {
       });
       setPlayerStats(nextStats);
       savePlayerStats(nextStats);
+
+      trackEvent('game_completed', {
+        challengeId: activeChallenge.id,
+        won: isWin,
+        attemptsCount: updatedGuesses.length,
+        score: updatedScore.totalScore,
+      });
 
       submitDailyResult({
         challengeId: activeChallenge.id,
@@ -305,6 +324,12 @@ export function App() {
     });
     setPlayerStats(nextStats);
     savePlayerStats(nextStats);
+
+    trackEvent('game_secured_early_victory', {
+      challengeId: activeChallenge.id,
+      attemptsCount: currentGameState.guesses.length,
+      score: currentGameState.totalScore,
+    });
 
     submitDailyResult({
       challengeId: activeChallenge.id,
