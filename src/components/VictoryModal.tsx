@@ -16,6 +16,7 @@ interface VictoryModalProps {
   onNextChallenge?: () => void;
   hasNextChallenge?: boolean;
   onOpenStats?: () => void;
+  onOpenLeaderboard?: () => void;
   challengeNumber?: number;
 }
 
@@ -29,6 +30,7 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   onNextChallenge,
   hasNextChallenge,
   onOpenStats,
+  onOpenLeaderboard,
   challengeNumber,
 }) => {
   const [copied, setCopied] = useState(false);
@@ -226,13 +228,24 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
                 </a>
               )}
 
+              {onOpenLeaderboard && (
+                <button
+                  type="button"
+                  onClick={onOpenLeaderboard}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 py-2.5 text-xs font-black text-amber-300 hover:bg-amber-500/20 transition cursor-pointer"
+                >
+                  <Trophy className="h-4 w-4 text-amber-400" />
+                  Ver Ranking de Pilotos
+                </button>
+              )}
+
               {onOpenStats && (
                 <button
                   type="button"
                   onClick={onOpenStats}
                   className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-zinc-800 bg-zinc-900/60 py-2.5 text-xs font-bold text-zinc-300 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
                 >
-                  <BarChart2 className="h-4 w-4 text-amber-400" />
+                  <BarChart2 className="h-4 w-4 text-zinc-400" />
                   Ver Minhas Estatísticas
                 </button>
               )}

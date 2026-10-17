@@ -1,10 +1,11 @@
-import { HelpCircle, Car, BarChart2, Flame } from 'lucide-react';
+import { HelpCircle, Car, BarChart2, Flame, Trophy } from 'lucide-react';
 
 interface HeaderProps {
   currentAttempt?: number;
   maxAttempts?: number;
   onOpenHelp: () => void;
   onOpenStats?: () => void;
+  onOpenLeaderboard?: () => void;
   dayNumber?: number;
   gameMode?: 'daily' | 'training';
   onToggleGameMode?: () => void;
@@ -13,6 +14,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onOpenHelp,
   onOpenStats,
+  onOpenLeaderboard,
   dayNumber,
   gameMode = 'daily',
   onToggleGameMode,
@@ -65,6 +67,17 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="hidden sm:inline">Diário</span>
               </>
             )}
+          </button>
+        )}
+
+        {onOpenLeaderboard && (
+          <button
+            onClick={onOpenLeaderboard}
+            className="rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-amber-400 transition-colors cursor-pointer"
+            title="Ranking de Pilotos"
+            aria-label="Ranking"
+          >
+            <Trophy className="h-5 w-5 sm:h-6 sm:w-6" />
           </button>
         )}
 

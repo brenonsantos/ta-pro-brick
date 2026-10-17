@@ -119,9 +119,43 @@ Finalize gameplay polish, fix edge-case modal dilemmas, streamline header micro-
   - Integrated custom "Lasanha no Carrinho de Compras" logo into `public/logo.png` and favicon.
   - Scaled from high-res master with 7x Retina crispness (136 KB).
   - Framed in amber rounded-square badge container in header matching the design aesthetic.
-- [x] **Production Cleanliness**:
-  - Removed temporary dev review toolbar and theme studio.
-  - Default Âmbar Garagem palette locked in.
 - [x] **Validation & Testing**:
   - All 25 vitest tests passing.
   - Production build clean with zero TypeScript errors.
+
+---
+
+## Milestone 7: Supabase Backend, Ranking por Pontos, Auth & Admin Panel
+### Objective
+Transition the game from static mocks to a cloud-backed architecture with Supabase:
+1. Leaderboard by points (Daily Ranking + All-time Leaderboard) with anti-spoiler protection.
+2. Frictionless session management: instant anonymous play + optional Google login to sync progress across devices.
+3. Protected `/admin` panel to view the calendar and schedule future vehicle challenges with photos and clues.
+4. Resilient offline/local fallback so the app runs smoothly with or without Supabase env credentials.
+
+### Tasks
+- [x] **Database & Supabase Architecture (`supabase/schema.sql`, `src/services/supabase.ts`)**:
+  - Tables: `challenges`, `players`, `daily_results`.
+  - Views / Functions for Leaderboard by Points:
+    - Daily ranking ordered by `score DESC`, `attempts_count ASC`, `created_at ASC`.
+    - All-time ranking ordered by `total_score DESC`, `streaks DESC`.
+  - Row Level Security (RLS) to protect unpublished future challenges and admin operations.
+  - Client service with graceful fallback to local storage / mock data if credentials are not configured yet.
+- [x] **Player Identity & Anonymous Sessions (`src/services/playerService.ts`)**:
+  - Automatically manage anonymous player UUID and nickname ("Piloto #123").
+  - Allow player to customize their nickname in the Leaderboard modal.
+  - Optional Google sign-in integration to link anonymous identity to an authenticated account.
+- [x] **Ranking por Pontos Component (`src/components/LeaderboardModal.tsx`)**:
+  - Trophy icon button in `Header.tsx` to view ranking anytime.
+  - Shortcut button directly in `VictoryModal.tsx` ("Ver Ranking").
+  - Tabs: "Hoje (Desafio Diário)" e "Geral (Pontuação Acumulada)".
+  - Displays Rank (#1, #2...), Nickname, Pontos, Chutes e Medalhas.
+  - Anti-spoiler banner for players who haven't completed today's challenge.
+- [x] **Admin Panel (`src/pages/AdminPage.tsx`, `src/services/adminService.ts`)**:
+  - Accessible via URL hash/route (e.g. `?admin` or `/#admin`).
+  - Passcode protection (`adminbrick` / `VITE_ADMIN_PASSWORD`).
+  - Calendar/list view of published vs upcoming scheduled challenges.
+  - Challenge editor form: date, vehicle title, announced price, photo URLs, description, location, time posted, permissions.
+- [x] **Validation & Verification**:
+  - 29 unit tests passing (`npm test`).
+  - Production build clean with zero TypeScript errors (`npm run build`).

@@ -9,6 +9,9 @@ import { VictoryModal } from './components/VictoryModal';
 import { HelpModal } from './components/HelpModal';
 import { StatsModal } from './components/StatsModal';
 import { LastGuessFeedback } from './components/LastGuessFeedback';
+import { LeaderboardModal } from './components/LeaderboardModal';
+import { AdminPage } from './pages/AdminPage';
+import { submitDailyResult } from './services/rankingService';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
 import { GAME_CONFIG } from './config/gameConfig';
@@ -67,6 +70,32 @@ export function App() {
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(true);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
+
+  const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
+    return (
+      typeof window !== 'undefined' &&
+      (window.location.pathname === '/admin' ||
+        window.location.search.includes('admin') ||
+        window.location.hash === '#admin')
+    );
+  });
+
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsAdminRoute(
+        window.location.pathname === '/admin' ||
+        window.location.search.includes('admin') ||
+        window.location.hash === '#admin'
+      );
+    };
+    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('hashchange', handleRouteChange);
+    };
+  }, []);
 
   useEffect(() => {
     document.documentElement.removeAttribute('data-theme');
@@ -212,6 +241,15 @@ export function App() {
       });
       setPlayerStats(nextStats);
       savePlayerStats(nextStats);
+
+      submitDailyResult({
+        challengeId: activeChallenge.id,
+        score: updatedScore.totalScore,
+        attemptsCount: updatedGuesses.length,
+        bestGuess: updatedScore.bestGuess?.guessValue || null,
+        won: isWin,
+      });
+
       setIsVictoryModalOpen(true);
       return;
     }
@@ -258,6 +296,15 @@ export function App() {
     });
     setPlayerStats(nextStats);
     savePlayerStats(nextStats);
+
+    submitDailyResult({
+      challengeId: activeChallenge.id,
+      score: currentGameState.totalScore,
+      attemptsCount: currentGameState.guesses.length,
+      bestGuess: scoreBreakdown.bestGuess?.guessValue || null,
+      won: isWin,
+    });
+
     setIsVictoryModalOpen(true);
   };
 
@@ -292,11 +339,28 @@ export function App() {
     currentGameState.status === 'won_can_continue' ||
     currentGameState.guesses.length >= currentGameState.maxAttempts;
 
+  if (isAdminRoute) {
+    return (
+      <AdminPage
+        onBackToGame={() => {
+          if (window.location.hash === '#admin') {
+            window.location.hash = '';
+          }
+          if (window.location.pathname === '/admin') {
+            window.history.pushState({}, '', '/');
+          }
+          setIsAdminRoute(false);
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col antialiased selection:bg-amber-500 selection:text-black">
       <Header
         onOpenHelp={() => setIsHelpOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
+        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         dayNumber={dailyChallengeNumber}
         gameMode={gameMode}
         onToggleGameMode={() => setGameMode((m) => (m === 'daily' ? 'training' : 'daily'))}
@@ -395,8 +459,20 @@ export function App() {
       </main>
 
       {/* Footer info */}
-      <footer className="border-t border-zinc-900 py-4 text-center text-xs text-zinc-600">
+      <footer className="border-t border-zinc-900 py-4 text-center text-xs text-zinc-600 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2">
         <p>Tá pro Brick • Adivinhe o Preço dos Anúncios • Não afiliado à Tabela Fipe</p>
+        <span className="hidden sm:inline text-zinc-800">•</span>
+        <a
+          href="#admin"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.hash = 'admin';
+            setIsAdminRoute(true);
+          }}
+          className="text-zinc-600 hover:text-amber-400/80 transition cursor-pointer"
+        >
+          Curadoria / Admin
+        </a>
       </footer>
 
       {/* Modals */}
@@ -410,6 +486,7 @@ export function App() {
         onNextChallenge={handleNextChallenge}
         hasNextChallenge={hasNextChallenge}
         onOpenStats={() => setIsStatsOpen(true)}
+        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         challengeNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
       />
 
@@ -423,6 +500,14 @@ export function App() {
       <HelpModal
         isOpen={isHelpOpen}
         onClose={handleCloseHelp}
+      />
+
+      <LeaderboardModal
+        isOpen={isLeaderboardOpen}
+        onClose={() => setIsLeaderboardOpen(false)}
+        challengeId={activeChallenge.id}
+        hasPlayedToday={currentGameState.status === 'completed' || currentGameState.status === 'won_can_continue'}
+        dayNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
       />
     </div>
   );
