@@ -239,18 +239,18 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 <button
                   type="button"
                   onClick={handleSendSuggestionInstagram}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 py-2.5 text-xs font-black text-white hover:opacity-95 transition cursor-pointer shadow-md"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer shadow-sm"
                   title="Copia a sugestão e abre o Instagram Direct"
                 >
-                  <InstagramIcon className="h-4 w-4" />
+                  <InstagramIcon className="h-4 w-4 text-zinc-300" />
                   {copiedSuggest ? 'Copiado! Abrindo Direct...' : 'Enviar por Instagram'}
                 </button>
                 <button
                   type="button"
                   onClick={handleSendSuggestion}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer shadow-sm"
                 >
-                  <Mail className="h-3.5 w-3.5" />
+                  <Mail className="h-4 w-4 text-zinc-300" />
                   Enviar por E-mail
                 </button>
               </div>
@@ -315,18 +315,18 @@ export const ContactModal: React.FC<ContactModalProps> = ({
                 <button
                   type="button"
                   onClick={handleSendRemovalInstagram}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer shadow-sm"
                   title="Copia a solicitação e abre o Instagram Direct"
                 >
-                  <InstagramIcon className="h-4 w-4 text-rose-400" />
+                  <InstagramIcon className="h-4 w-4 text-zinc-300" />
                   {copiedRemoval ? 'Copiado! Abrindo Direct...' : 'Pedir pelo Instagram'}
                 </button>
                 <button
                   type="button"
                   onClick={handleSendRemoval}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white hover:bg-rose-500 transition cursor-pointer shadow-md shadow-rose-600/20"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 py-2.5 text-xs font-bold text-zinc-200 hover:bg-zinc-800 hover:text-white transition cursor-pointer shadow-sm"
                 >
-                  <ShieldAlert className="h-4 w-4" />
+                  <ShieldAlert className="h-4 w-4 text-zinc-300" />
                   Solicitar por E-mail
                 </button>
               </div>
