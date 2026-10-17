@@ -11,6 +11,9 @@ import { StatsModal } from './components/StatsModal';
 import { LastGuessFeedback } from './components/LastGuessFeedback';
 import { LeaderboardModal } from './components/LeaderboardModal';
 import { AdminPage } from './pages/AdminPage';
+import { CookieBanner } from './components/CookieBanner';
+import { ContactModal } from './components/ContactModal';
+import { AdBannerSlot } from './components/AdBannerSlot';
 import { submitDailyResult } from './services/rankingService';
 
 import { Challenge, GameState, RoundStatus } from './types/game';
@@ -71,6 +74,8 @@ export function App() {
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(true);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
+  const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
+  const [contactInitialTab, setContactInitialTab] = useState<'suggest' | 'remove' | 'contact'>('suggest');
 
   const [isAdminRoute, setIsAdminRoute] = useState<boolean>(() => {
     return (
@@ -456,23 +461,62 @@ export function App() {
           guesses={currentGameState.guesses}
           maxAttempts={currentGameState.maxAttempts}
         />
+
+        {/* Non-intrusive Ad Banner (Only shown once round is completed) */}
+        <AdBannerSlot isCompleted={currentGameState.status === 'completed'} />
       </main>
 
       {/* Footer info */}
-      <footer className="border-t border-zinc-900 py-4 text-center text-xs text-zinc-600 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2">
-        <p>Tá pro Brick • Adivinhe o Preço dos Anúncios • Não afiliado à Tabela Fipe</p>
-        <span className="hidden sm:inline text-zinc-800">•</span>
-        <a
-          href="#admin"
-          onClick={(e) => {
-            e.preventDefault();
-            window.location.hash = 'admin';
-            setIsAdminRoute(true);
-          }}
-          className="text-zinc-600 hover:text-amber-400/80 transition cursor-pointer"
-        >
-          Curadoria / Admin
-        </a>
+      <footer className="border-t border-zinc-900 py-6 text-center text-xs text-zinc-500 space-y-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-xs">
+          <button
+            type="button"
+            onClick={() => {
+              setContactInitialTab('suggest');
+              setIsContactOpen(true);
+            }}
+            className="text-zinc-400 hover:text-amber-400 transition cursor-pointer"
+          >
+            Sugerir Anúncio 🚗
+          </button>
+          <span className="text-zinc-700">•</span>
+          <button
+            type="button"
+            onClick={() => {
+              setContactInitialTab('remove');
+              setIsContactOpen(true);
+            }}
+            className="text-zinc-400 hover:text-rose-400 transition cursor-pointer"
+          >
+            Remover Anúncio 🛡️
+          </button>
+          <span className="text-zinc-700">•</span>
+          <button
+            type="button"
+            onClick={() => {
+              setContactInitialTab('contact');
+              setIsContactOpen(true);
+            }}
+            className="text-zinc-400 hover:text-white transition cursor-pointer"
+          >
+            Contato & Redes 📬
+          </button>
+          <span className="text-zinc-700">•</span>
+          <a
+            href="#admin"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.hash = 'admin';
+              setIsAdminRoute(true);
+            }}
+            className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
+          >
+            Curadoria
+          </a>
+        </div>
+        <p className="text-[11px] text-zinc-600 px-4">
+          Tá pro Brick • Adivinhe o Preço dos Anúncios • Conteúdo público e educativo • Não afiliado à Tabela Fipe
+        </p>
       </footer>
 
       {/* Modals */}
@@ -508,6 +552,19 @@ export function App() {
         challengeId={activeChallenge.id}
         hasPlayedToday={currentGameState.status === 'completed' || currentGameState.status === 'won_can_continue'}
         dayNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
+      />
+
+      <ContactModal
+        isOpen={isContactOpen}
+        onClose={() => setIsContactOpen(false)}
+        initialTab={contactInitialTab}
+      />
+
+      <CookieBanner
+        onOpenPrivacy={() => {
+          setContactInitialTab('contact');
+          setIsContactOpen(true);
+        }}
       />
     </div>
   );

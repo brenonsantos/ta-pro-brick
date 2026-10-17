@@ -159,3 +159,29 @@ Transition the game from static mocks to a cloud-backed architecture with Supaba
 - [x] **Validation & Verification**:
   - 29 unit tests passing (`npm test`).
   - Production build clean with zero TypeScript errors (`npm run build`).
+
+---
+
+## Milestone 8: Contato, Sugestões/Remoção, LGPD/Cookies & Ads Não-Intrusivo
+### Objective
+Implement essential legal, community, and monetization-ready foundations:
+1. Contact & Community Modal: submit car listing suggestions, request listing removal (DMCA/direitos), and developer/Instagram contacts.
+2. LGPD-compliant Cookie Consent Banner stored in local storage.
+3. Non-intrusive ad slot displayed only after game completion.
+
+### Tasks
+- [x] **Contact Modal (`src/components/ContactModal.tsx`)**:
+  - Tabs: "Sugerir Anúncio", "Pedir Remoção" e "Contato / Redes".
+  - Pre-fills mailto or community form for easy submission without friction.
+  - Links to Instagram (@taprobrick) and contact email.
+- [x] **Cookie Consent Banner (`src/components/CookieBanner.tsx`)**:
+  - Discrete bottom banner for LGPD/cookies compliance.
+  - "Entendi" button storing choice in localStorage.
+- [x] **Non-Intrusive Ad Slot (`src/components/AdBannerSlot.tsx`)**:
+  - Appears only when the round is completed (`status === 'completed'`).
+  - Subtle label "Publicidade" with placeholder / Google AdSense container.
+- [x] **Footer & Navigation Integration (`src/App.tsx`, `src/components/Header.tsx`)**:
+  - Links in footer for "Sugerir Anúncio", "Remover Anúncio", "Contato & Redes" e "Curadoria".
+- [x] **Validation & Verification**:
+  - 35 unit tests passing (`npm test`).
+  - Production build clean with zero TypeScript errors (`npm run build`).
