@@ -378,9 +378,12 @@
       </div>
 
       <!-- Footer Actions -->
-      <div style="padding: 16px 20px; border-top: 1px solid #27272a; background: #121215; display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+      <div style="padding: 16px 20px; border-top: 1px solid #27272a; background: #121215; display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap;">
         <button id="tpb-cancel-btn" style="background: #27272a; border: 1px solid #3f3f46; color: #e4e4e7; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
           Fechar
+        </button>
+        <button id="tpb-download-btn" style="background: #27272a; border: 1px solid #f59e0b; color: #f59e0b; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+          <span>📥</span> Baixar JSON
         </button>
         <button id="tpb-copy-btn" style="background: #f59e0b; border: none; color: #18181b; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
           <span>📋</span> Copiar JSON do Carro
@@ -403,6 +406,42 @@
         renderModalContent();
       });
     });
+
+    // Baixar arquivo JSON
+    const downloadBtn = modal.querySelector('#tpb-download-btn');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', () => {
+        try {
+          const jsonStr = JSON.stringify(extracted, null, 2);
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const safeTitle = (extracted.title || 'anuncio-veiculo')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+          a.href = url;
+          a.download = `${safeTitle || 'anuncio'}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          downloadBtn.style.borderColor = '#10b981';
+          downloadBtn.style.color = '#10b981';
+          downloadBtn.innerHTML = '<span>✓</span> Baixado!';
+          setTimeout(() => {
+            downloadBtn.style.borderColor = '#f59e0b';
+            downloadBtn.style.color = '#f59e0b';
+            downloadBtn.innerHTML = '<span>📥</span> Baixar JSON';
+          }, 2000);
+        } catch (err) {
+          console.error('Erro ao baixar JSON:', err);
+        }
+      });
+    }
 
     // Copiar para clipboard
     const copyBtn = modal.querySelector('#tpb-copy-btn');

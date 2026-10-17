@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileCode, Check, AlertCircle, Copy, Bookmark } from 'lucide-react';
+import { X, FileCode, Check, AlertCircle, Copy, Bookmark, Upload } from 'lucide-react';
 
 import { FB_MARKETPLACE_BOOKMARKLET } from '../utils/bookmarklet';
 
@@ -50,6 +50,30 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setErrorMessage('');
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        if (!content) return;
+        setJsonText(content);
+        const parsed = JSON.parse(content);
+        if (typeof parsed !== 'object' || parsed === null) {
+          throw new Error('Arquivo não contém um objeto JSON válido.');
+        }
+        onImport(parsed);
+        onClose();
+      } catch (err: any) {
+        setErrorMessage(`Falha ao ler arquivo: ${err.message || 'JSON inválido'}`);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const handleCopyBookmarklet = async () => {
     try {
       await navigator.clipboard.writeText(FB_MARKETPLACE_BOOKMARKLET);
@@ -94,13 +118,25 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
         {/* Content */}
         <div className="mt-4 flex-1 overflow-y-auto space-y-4 pr-1">
           <div>
-            <label className="block text-xs font-bold text-zinc-300 mb-1.5">
-              Cole o JSON exportado pelo script extrator:
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-zinc-300">
+                Cole o JSON ou carregue o arquivo:
+              </label>
+              <label className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-400 bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 px-2 py-1 rounded-lg cursor-pointer transition">
+                <Upload className="h-3 w-3" />
+                <span>Subir .json</span>
+                <input
+                  type="file"
+                  accept=".json,application/json"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
             <textarea
               value={jsonText}
               onChange={(e) => setJsonText(e.target.value)}
-              rows={7}
+              rows={6}
               placeholder={`{\n  "title": "Jeep Renegade Longitude 2023",\n  "price": 91990,\n  "location": "Curitiba, PR",\n  "photos": ["https://..."],\n  "description": "Carro novo..."\n}`}
               className="w-full rounded-xl border border-zinc-700 bg-zinc-900/90 p-3 text-xs font-mono text-zinc-200 focus:border-amber-500 focus:outline-none placeholder-zinc-600"
               autoFocus
