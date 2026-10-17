@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, FileCode, Check, AlertCircle, Copy, Bookmark } from 'lucide-react';
 
+import { FB_MARKETPLACE_BOOKMARKLET } from '../utils/bookmarklet';
+
 interface ImportChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -50,12 +52,16 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
 
   const handleCopyBookmarklet = async () => {
     try {
-      // Carrega o código do extrator direto
-      const scriptCode = `javascript:(function(){const s=document.createElement('script');s.src='https://taprobrick.com.br/scripts/fb-marketplace-extractor.js?t='+Date.now();document.body.appendChild(s);})();`;
-      await navigator.clipboard.writeText(scriptCode);
+      await navigator.clipboard.writeText(FB_MARKETPLACE_BOOKMARKLET);
       setCopiedBookmarklet(true);
       setTimeout(() => setCopiedBookmarklet(false), 2500);
     } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = FB_MARKETPLACE_BOOKMARKLET;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
       setCopiedBookmarklet(true);
       setTimeout(() => setCopiedBookmarklet(false), 2500);
     }
