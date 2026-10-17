@@ -98,3 +98,30 @@ Transition the game into an official daily challenge where all players receive t
   - Unit tests for date mapping and countdown calculation.
   - Build check and verify in local browser.
   - Keep strictly local on branch `feature/daily-challenge-mode` without deploying.
+
+---
+
+## Milestone 6: Launch Polish & Mascot Branding
+### Objective
+Finalize gameplay polish, fix edge-case modal dilemmas, streamline header micro-interactions, reveal locked clues on game over, and integrate the official high-resolution mascot brand identity.
+
+### Tasks
+- [x] **Post-Game Clue Revelation & UI Refinement**:
+  - Automatically reveal all locked clues (photos, description, location, posting date) once round completes (`status !== 'in_progress'`).
+  - Add smooth touch swipe support and pagination dots for mobile gallery browsing.
+  - Remove redundant "mais fotos liberadas" badge upon changing photos.
+- [x] **Dilemma Flow Bugfix (`VictoryModal.tsx`)**:
+  - Prevent players from getting stuck in an unresolvable state: close button (`X`) is only rendered once round is fully completed (`gameState.status === 'completed'`), preventing closure during the risk/secure dilemma.
+- [x] **Header & Input Streamlining**:
+  - Remove attempt counter pill from `Header.tsx`.
+  - Embed dynamic attempt status directly on submit button (`CONFIRMAR 1/5` to `5/5`).
+- [x] **Official Brand Mascot & Favicon**:
+  - Integrated custom "Lasanha no Carrinho de Compras" logo into `public/logo.png` and favicon.
+  - Scaled from high-res master with 7x Retina crispness (136 KB).
+  - Framed in amber rounded-square badge container in header matching the design aesthetic.
+- [x] **Production Cleanliness**:
+  - Removed temporary dev review toolbar and theme studio.
+  - Default Âmbar Garagem palette locked in.
+- [x] **Validation & Testing**:
+  - All 25 vitest tests passing.
+  - Production build clean with zero TypeScript errors.

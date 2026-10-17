@@ -1,8 +1,8 @@
 import { HelpCircle, Car, BarChart2, Flame } from 'lucide-react';
 
 interface HeaderProps {
-  currentAttempt: number;
-  maxAttempts: number;
+  currentAttempt?: number;
+  maxAttempts?: number;
   onOpenHelp: () => void;
   onOpenStats?: () => void;
   dayNumber?: number;
@@ -11,8 +11,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentAttempt,
-  maxAttempts,
   onOpenHelp,
   onOpenStats,
   dayNumber,
@@ -21,9 +19,13 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between border-b border-zinc-800 bg-zinc-950/90 px-4 sm:px-8 py-3.5 sm:py-4 backdrop-blur-md">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-amber-500 font-black text-zinc-950 shadow-md shadow-amber-500/20">
-          <Car className="h-5 w-5 sm:h-6 sm:w-6" />
+      <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-amber-500 shadow-md shadow-amber-500/20 shrink-0 p-1 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Tá pro Brick"
+            className="h-full w-full object-contain select-none transition-transform hover:scale-105"
+          />
         </div>
         <div>
           <h1 className="text-lg sm:text-xl font-black tracking-tight text-white flex items-center gap-1.5">
@@ -65,14 +67,6 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
         )}
-
-        <div className="rounded-full border border-zinc-800 bg-zinc-900 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-zinc-300">
-          Tentativa{' '}
-          <span className="font-bold text-amber-400">
-            {Math.min(currentAttempt, maxAttempts)}
-          </span>
-          /{maxAttempts}
-        </div>
 
         <button
           onClick={onOpenStats}

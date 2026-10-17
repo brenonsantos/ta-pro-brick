@@ -7,6 +7,9 @@ interface ClueViewerProps {
   unlockedCount: number; // 1 to 5
   isCompleted?: boolean;
   originalUrl?: string;
+  isBalancedLayout?: boolean;
+  highContrastLocks?: boolean;
+  unlockedClueGlow?: boolean;
 }
 
 export const ClueViewer: React.FC<ClueViewerProps> = ({
@@ -14,8 +17,16 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
   unlockedCount,
   isCompleted,
   originalUrl,
+  isBalancedLayout = true,
+  highContrastLocks = true,
+  unlockedClueGlow = true,
 }) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const [hasSwitchedPhoto, setHasSwitchedPhoto] = useState(false);
+
+  const isLatestClue = (clueNumber: number) => {
+    return unlockedClueGlow && !isCompleted && unlockedCount === clueNumber;
+  };
 
   // Collect all currently unlocked photos
   const coverClue = clues.find((c) => c.type === 'title_and_cover');
@@ -27,12 +38,13 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
   // Reset active photo to 0 whenever the car or cover image changes
   useEffect(() => {
     setActivePhotoIndex(0);
+    setHasSwitchedPhoto(false);
   }, [coverClue?.content.coverImageUrl]);
 
-  const isGalleryUnlocked = unlockedCount >= 2;
-  const isDescriptionUnlocked = unlockedCount >= 3;
-  const isLocationUnlocked = unlockedCount >= 4;
-  const isTimeUnlocked = unlockedCount >= 5;
+  const isGalleryUnlocked = Boolean(isCompleted || unlockedCount >= 2);
+  const isDescriptionUnlocked = Boolean(isCompleted || unlockedCount >= 3);
+  const isLocationUnlocked = Boolean(isCompleted || unlockedCount >= 4);
+  const isTimeUnlocked = Boolean(isCompleted || unlockedCount >= 5);
 
   const allPhotos: string[] = [];
   if (coverClue?.content.coverImageUrl) {
@@ -49,18 +61,69 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
   const currentPhotoIndex = allPhotos.length > 0 ? Math.min(activePhotoIndex, allPhotos.length - 1) : 0;
 
   const handlePrevPhoto = () => {
+    setHasSwitchedPhoto(true);
     setActivePhotoIndex((prev) => (prev > 0 ? prev - 1 : allPhotos.length - 1));
   };
 
   const handleNextPhoto = () => {
+    setHasSwitchedPhoto(true);
     setActivePhotoIndex((prev) => (prev < allPhotos.length - 1 ? prev + 1 : 0));
+  };
+
+  const handleSelectPhoto = (idx: number) => {
+    setHasSwitchedPhoto(true);
+    setActivePhotoIndex(idx);
+  };
+
+  // Touch Swipe detection for mobile devices
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const minSwipeDistance = 40;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEndX(null);
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchEndX === null || allPhotos.length <= 1) return;
+    const distanceX = touchStartX - touchEndX;
+    const distanceY = Math.abs((touchStartY ?? 0) - e.changedTouches[0].clientY);
+
+    // Only swipe if horizontal motion is significantly larger than vertical motion
+    if (Math.abs(distanceX) > distanceY && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+        handleNextPhoto();
+      } else {
+        handlePrevPhoto();
+      }
+    }
   };
 
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Photo Stage */}
-      <div id="clue-section-gallery" className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-zinc-800 bg-zinc-900 shadow-xl scroll-mt-20">
-        <div className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden">
+      <div
+        id="clue-section-gallery"
+        className={`relative overflow-hidden rounded-2xl sm:rounded-3xl border transition-all duration-300 scroll-mt-20 ${
+          isLatestClue(2)
+            ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_25px_-5px_rgba(245,158,11,0.28)] bg-zinc-900'
+            : 'border-zinc-800 bg-zinc-900 shadow-xl'
+        }`}
+      >
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden touch-pan-y select-none"
+        >
           {allPhotos.length > 0 ? (
             <>
               {/* Ambient blurred backdrop */}
@@ -74,7 +137,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
               <img
                 src={allPhotos[currentPhotoIndex] || allPhotos[0]}
                 alt="Foto do anúncio"
-                className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none"
+                className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none pointer-events-none"
               />
             </>
           ) : (
@@ -88,26 +151,51 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
             <span className="rounded-full bg-black/75 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md border border-white/10">
               📷 {currentPhotoIndex + 1}/{allPhotos.length}
             </span>
-            {isGalleryUnlocked && (
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs sm:text-sm font-bold text-white backdrop-blur-md shadow-md">
+            {isGalleryUnlocked && !hasSwitchedPhoto && (
+              <span
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-bold backdrop-blur-md shadow-md transition-all ${
+                  isLatestClue(2)
+                    ? 'bg-amber-500 text-zinc-950 ring-2 ring-amber-300 animate-pulse'
+                    : 'bg-emerald-500/90 text-white'
+                }`}
+              >
                 <Sparkles className="h-3.5 w-3.5" /> Mais fotos liberadas
               </span>
             )}
           </div>
+
+          {/* Dots pagination for mobile and quick navigation */}
+          {allPhotos.length > 1 && (
+            <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-20 flex items-center gap-1.5 rounded-full bg-black/60 px-2.5 py-1.5 backdrop-blur-md border border-white/10">
+              {allPhotos.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleSelectPhoto(idx)}
+                  aria-label={`Ir para foto ${idx + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
+                    idx === currentPhotoIndex
+                      ? 'w-4 bg-amber-400'
+                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Gallery navigation controls */}
           {allPhotos.length > 1 && (
             <>
               <button
                 onClick={handlePrevPhoto}
-                className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
+                className="hidden sm:flex absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Foto anterior"
               >
                 <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
               <button
                 onClick={handleNextPhoto}
-                className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
+                className="hidden sm:flex absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Próxima foto"
               >
                 <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -140,102 +228,277 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
       </div>
 
       {/* Secondary Clues Cards Grid */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {/* Clue 3: Description */}
-        <div
-          id="clue-section-description"
-          className={`relative rounded-2xl border p-4 sm:p-5 transition-all scroll-mt-20 ${
-            isDescriptionUnlocked
-              ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
-              : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
-          }`}
-        >
-          <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
-            <span className="flex items-center gap-2 text-zinc-400">
-              <FileText className="h-4 w-4 text-amber-400" /> Pista 3: Descrição
-            </span>
-            {!isDescriptionUnlocked && (
-              <span className="flex items-center gap-1 text-xs text-zinc-500">
-                <Lock className="h-3.5 w-3.5" /> Palpite 3
-              </span>
-            )}
-          </div>
-          <div className="mt-2.5 text-xs sm:text-sm leading-relaxed">
-            {isDescriptionUnlocked ? (
-              <p className="italic text-zinc-300 whitespace-pre-line">
-                "{descriptionClue?.content.description}"
-              </p>
-            ) : (
-              <p className="italic text-zinc-600">
-                A descrição do vendedor será revelada após o 2º palpite.
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Clue 4 & 5: Location & Time */}
+      {isBalancedLayout ? (
+        /* Balanced Layout: Description full-width, Location & Time side-by-side */
         <div className="space-y-3">
-          {/* Location */}
+          {/* Clue 3: Description Full Width */}
           <div
-            id="clue-section-location"
-            className={`rounded-2xl border p-4 transition-all scroll-mt-20 ${
-              isLocationUnlocked
-                ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+            id="clue-section-description"
+            className={`relative rounded-2xl border p-4 sm:p-5 transition-all duration-300 scroll-mt-20 ${
+              isDescriptionUnlocked
+                ? isLatestClue(3)
+                  ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                  : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                : highContrastLocks
+                ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
             }`}
           >
             <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
               <span className="flex items-center gap-2 text-zinc-400">
-                <MapPin className="h-4 w-4 text-rose-400" /> Pista 4: Cidade
+                <FileText className="h-4 w-4 text-amber-400" /> Pista 3: Descrição
               </span>
-              {!isLocationUnlocked && (
-                <span className="flex items-center gap-1 text-xs text-zinc-500">
-                  <Lock className="h-3.5 w-3.5" /> Palpite 4
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {isLatestClue(3) && (
+                  <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                    <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                  </span>
+                )}
+                {!isDescriptionUnlocked && (
+                  <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                    <Lock className="h-3.5 w-3.5" /> Palpite 3
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="mt-1.5 text-sm sm:text-base font-semibold">
-              {isLocationUnlocked && locationClue?.content.location ? (
-                <span className="text-zinc-100">
-                  📍 {locationClue.content.location.city} — {locationClue.content.location.state}
-                </span>
+            <div className="mt-2 text-xs sm:text-sm leading-relaxed">
+              {isDescriptionUnlocked ? (
+                <p className="italic text-zinc-300 whitespace-pre-line">
+                  "{descriptionClue?.content.description}"
+                </p>
               ) : (
-                <span className="text-xs sm:text-sm text-zinc-600">Cidade e estado bloqueados</span>
+                <p className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                  Descrição bloqueada
+                </p>
               )}
             </div>
           </div>
 
-          {/* Time on Market */}
+          {/* Clue 4 & 5: Location & Time Side by Side in 2 cols */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Location */}
+            <div
+              id="clue-section-location"
+              className={`rounded-2xl border p-4 transition-all duration-300 scroll-mt-20 ${
+                isLocationUnlocked
+                  ? isLatestClue(4)
+                    ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                    : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                  : highContrastLocks
+                  ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
+                  : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span className="flex items-center gap-2 text-zinc-400">
+                  <MapPin className="h-4 w-4 text-rose-400" /> Pista 4: Cidade
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {isLatestClue(4) && (
+                    <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                      <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                    </span>
+                  )}
+                  {!isLocationUnlocked && (
+                    <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                      <Lock className="h-3.5 w-3.5" /> Palpite 4
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2">
+                {isLocationUnlocked && locationClue?.content.location ? (
+                  <span className="text-sm sm:text-base font-semibold text-zinc-100">
+                    📍 {locationClue.content.location.city} — {locationClue.content.location.state}
+                  </span>
+                ) : (
+                  <span className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    Cidade e estado bloqueados
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Time on Market */}
+            <div
+              id="clue-section-time"
+              className={`rounded-2xl border p-4 transition-all duration-300 scroll-mt-20 ${
+                isTimeUnlocked
+                  ? isLatestClue(5)
+                    ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                    : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                  : highContrastLocks
+                  ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
+                  : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span className="flex items-center gap-2 text-zinc-400">
+                  <Clock className="h-4 w-4 text-sky-400" /> Pista 5: Tempo
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {isLatestClue(5) && (
+                    <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                      <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                    </span>
+                  )}
+                  {!isTimeUnlocked && (
+                    <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                      <Lock className="h-3.5 w-3.5" /> Palpite 5
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2">
+                {isTimeUnlocked && timeClue?.content.timeOnMarket ? (
+                  <span className="text-xs sm:text-sm font-semibold text-zinc-200">
+                    ⏱️ {timeClue.content.timeOnMarket}
+                  </span>
+                ) : (
+                  <span className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    Tempo de publicação bloqueado
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Legacy 2-column layout (Left: Description, Right: Location + Time stacked) */
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {/* Clue 3: Description */}
           <div
-            id="clue-section-time"
-            className={`rounded-2xl border p-4 transition-all scroll-mt-20 ${
-              isTimeUnlocked
-                ? 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+            id="clue-section-description"
+            className={`relative rounded-2xl border p-4 sm:p-5 transition-all duration-300 scroll-mt-20 ${
+              isDescriptionUnlocked
+                ? isLatestClue(3)
+                  ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                  : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                : highContrastLocks
+                ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
                 : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
             }`}
           >
             <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
               <span className="flex items-center gap-2 text-zinc-400">
-                <Clock className="h-4 w-4 text-sky-400" /> Pista 5: Tempo
+                <FileText className="h-4 w-4 text-amber-400" /> Pista 3: Descrição
               </span>
-              {!isTimeUnlocked && (
-                <span className="flex items-center gap-1 text-xs text-zinc-500">
-                  <Lock className="h-3.5 w-3.5" /> Palpite 5
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {isLatestClue(3) && (
+                  <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                    <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                  </span>
+                )}
+                {!isDescriptionUnlocked && (
+                  <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                    <Lock className="h-3.5 w-3.5" /> Palpite 3
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="mt-1.5 text-xs sm:text-sm">
-              {isTimeUnlocked && timeClue?.content.timeOnMarket ? (
-                <span className="font-semibold text-zinc-200">
-                  ⏱️ {timeClue.content.timeOnMarket}
-                </span>
+            <div className="mt-2 text-xs sm:text-sm leading-relaxed">
+              {isDescriptionUnlocked ? (
+                <p className="italic text-zinc-300 whitespace-pre-line">
+                  "{descriptionClue?.content.description}"
+                </p>
               ) : (
-                <span className="text-xs sm:text-sm text-zinc-600">Tempo de publicação bloqueado</span>
+                <p className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                  Descrição bloqueada
+                </p>
               )}
             </div>
           </div>
+
+          {/* Clue 4 & 5: Location & Time */}
+          <div className="space-y-3">
+            {/* Location */}
+            <div
+              id="clue-section-location"
+              className={`rounded-2xl border p-4 transition-all duration-300 scroll-mt-20 ${
+                isLocationUnlocked
+                  ? isLatestClue(4)
+                    ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                    : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                  : highContrastLocks
+                  ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
+                  : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span className="flex items-center gap-2 text-zinc-400">
+                  <MapPin className="h-4 w-4 text-rose-400" /> Pista 4: Cidade
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {isLatestClue(4) && (
+                    <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                      <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                    </span>
+                  )}
+                  {!isLocationUnlocked && (
+                    <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                      <Lock className="h-3.5 w-3.5" /> Palpite 4
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2">
+                {isLocationUnlocked && locationClue?.content.location ? (
+                  <span className="text-sm sm:text-base font-semibold text-zinc-100">
+                    📍 {locationClue.content.location.city} — {locationClue.content.location.state}
+                  </span>
+                ) : (
+                  <span className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    Cidade e estado bloqueados
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Time on Market */}
+            <div
+              id="clue-section-time"
+              className={`rounded-2xl border p-4 transition-all duration-300 scroll-mt-20 ${
+                isTimeUnlocked
+                  ? isLatestClue(5)
+                    ? 'border-amber-500/60 ring-1 ring-amber-400/40 shadow-[0_0_22px_-4px_rgba(245,158,11,0.25)] bg-zinc-900/95 text-zinc-100'
+                    : 'border-zinc-800 bg-zinc-900/90 text-zinc-200'
+                  : highContrastLocks
+                  ? 'border-zinc-800/80 bg-zinc-950/70 text-zinc-400'
+                  : 'border-zinc-900 bg-zinc-950/50 text-zinc-600'
+              }`}
+            >
+              <div className="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span className="flex items-center gap-2 text-zinc-400">
+                  <Clock className="h-4 w-4 text-sky-400" /> Pista 5: Tempo
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {isLatestClue(5) && (
+                    <span className="flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                      <Sparkles className="h-3 w-3 text-amber-400" /> Nova pista
+                    </span>
+                  )}
+                  {!isTimeUnlocked && (
+                    <span className={`flex items-center gap-1 text-xs ${highContrastLocks ? 'text-amber-400/90 font-semibold' : 'text-zinc-500'}`}>
+                      <Lock className="h-3.5 w-3.5" /> Palpite 5
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2">
+                {isTimeUnlocked && timeClue?.content.timeOnMarket ? (
+                  <span className="text-xs sm:text-sm font-semibold text-zinc-200">
+                    ⏱️ {timeClue.content.timeOnMarket}
+                  </span>
+                ) : (
+                  <span className={`text-xs sm:text-sm font-normal ${highContrastLocks ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    Tempo de publicação bloqueado
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

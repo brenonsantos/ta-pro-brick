@@ -81,8 +81,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
         {/* Glow ambient background */}
         <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-amber-500/20 blur-3xl" />
 
-        {/* Close Button if user wants to inspect the ad behind */}
-        {onClose && (
+        {/* Close Button only when round is completed (not during dilemma choice) */}
+        {onClose && isCompleted && (
           <button
             type="button"
             onClick={onClose}

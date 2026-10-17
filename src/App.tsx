@@ -68,6 +68,15 @@ export function App() {
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(true);
 
+  useEffect(() => {
+    document.documentElement.removeAttribute('data-theme');
+    try {
+      localStorage.removeItem('taprobrick_theme');
+    } catch {
+      // Ignore
+    }
+  }, []);
+
   const todayDateStr = getTodayDateString();
   const dailyChallengeIndex = getDailyChallengeIndex(challenges.length, todayDateStr);
   const dailyChallengeNumber = getDailyChallengeNumber(todayDateStr);
@@ -151,8 +160,11 @@ export function App() {
   // Remaining unused attempts
   const remainingAttempts = currentGameState.maxAttempts - currentGameState.guesses.length;
 
-  // Clues unlocked: starts at 1, increases with each guess up to 5
-  const unlockedCluesCount = Math.min(5, currentGameState.guesses.length + 1);
+  // Clues unlocked: starts at 1, increases with each guess up to 5, or reveals all (5) when round is completed!
+  const unlockedCluesCount =
+    currentGameState.status === 'completed'
+      ? 5
+      : Math.min(5, currentGameState.guesses.length + 1);
 
   // Current score breakdown
   const scoreBreakdown = calculateScore(
@@ -283,8 +295,6 @@ export function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col antialiased selection:bg-amber-500 selection:text-black">
       <Header
-        currentAttempt={currentGameState.guesses.length + 1}
-        maxAttempts={currentGameState.maxAttempts}
         onOpenHelp={() => setIsHelpOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
         dayNumber={dailyChallengeNumber}
@@ -293,7 +303,6 @@ export function App() {
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
-
         {/* In Training Mode: show training banner & vehicle switcher */}
         {gameMode === 'training' && (
           <div className="space-y-3">
@@ -348,6 +357,9 @@ export function App() {
           unlockedCount={unlockedCluesCount}
           isCompleted={currentGameState.status === 'completed'}
           originalUrl={activeChallenge.originalUrl}
+          isBalancedLayout={true}
+          highContrastLocks={true}
+          unlockedClueGlow={true}
         />
 
         {/* Inline Feedback Banner (Especially useful in Option A) */}
@@ -370,6 +382,9 @@ export function App() {
           initialValue={currentGameState.guesses[currentGameState.guesses.length - 1]?.guessValue ?? 0}
           onConfirmGuess={handleConfirmGuess}
           disabled={isInputDisabled}
+          useAmberFocus={true}
+          currentAttempt={Math.min(currentGameState.guesses.length + 1, currentGameState.maxAttempts)}
+          maxAttempts={currentGameState.maxAttempts}
         />
 
         {/* Guess History (Wordle Style) */}
