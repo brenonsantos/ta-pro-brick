@@ -39,6 +39,10 @@ import mockChallengesData from './data/mockChallenges.json';
 const challenges: Challenge[] = mockChallengesData as Challenge[];
 const ONBOARDING_STORAGE_KEY = 'taprobrick_has_seen_onboarding';
 
+// Feature flags
+const ENABLE_ADS = false; // Desabilitado temporariamente
+const ENABLE_ARCHIVE_MODE = false; // Modo de desafios passados / treino. Quando for lançado no futuro, será chamado de "Arquivo".
+
 function createInitialGameState(challenge: Challenge): GameState {
   return {
     challenge,
@@ -368,15 +372,15 @@ export function App() {
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         dayNumber={dailyChallengeNumber}
         gameMode={gameMode}
-        onToggleGameMode={() => setGameMode((m) => (m === 'daily' ? 'training' : 'daily'))}
+        onToggleGameMode={ENABLE_ARCHIVE_MODE ? () => setGameMode((m) => (m === 'daily' ? 'training' : 'daily')) : undefined}
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
-        {/* In Training Mode: show training banner & vehicle switcher */}
-        {gameMode === 'training' && (
+        {/* In Training/Archive Mode: show training banner & vehicle switcher (desabilitado temporariamente) */}
+        {ENABLE_ARCHIVE_MODE && gameMode === 'training' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-              <span className="font-semibold">Modo Garagem: teste qualquer veículo livremente.</span>
+              <span className="font-semibold">Arquivo: teste qualquer veículo livremente.</span>
               <button
                 type="button"
                 onClick={() => setGameMode('daily')}
@@ -398,7 +402,7 @@ export function App() {
         {gameMode === 'daily' && isDailyCompleted && (
           <DailyCountdown
             dayNumber={dailyChallengeNumber}
-            onSwitchToTraining={() => setGameMode('training')}
+            onSwitchToTraining={ENABLE_ARCHIVE_MODE ? () => setGameMode('training') : undefined}
             onShareResult={handleShareDaily}
             onOpenResult={() => setIsVictoryModalOpen(true)}
             isCopied={isShareCopied}
@@ -462,8 +466,10 @@ export function App() {
           maxAttempts={currentGameState.maxAttempts}
         />
 
-        {/* Non-intrusive Ad Banner (Only shown once round is completed) */}
-        <AdBannerSlot isCompleted={currentGameState.status === 'completed'} />
+        {/* Non-intrusive Ad Banner (Desabilitado temporariamente) */}
+        {ENABLE_ADS && (
+          <AdBannerSlot isCompleted={currentGameState.status === 'completed'} />
+        )}
       </main>
 
       {/* Footer info */}
@@ -477,7 +483,7 @@ export function App() {
             }}
             className="text-zinc-400 hover:text-amber-400 transition cursor-pointer"
           >
-            Sugerir Anúncio 🚗
+            Sugerir Anúncio
           </button>
           <span className="text-zinc-700">•</span>
           <button
@@ -488,7 +494,7 @@ export function App() {
             }}
             className="text-zinc-400 hover:text-rose-400 transition cursor-pointer"
           >
-            Remover Anúncio 🛡️
+            Remover Anúncio
           </button>
           <span className="text-zinc-700">•</span>
           <button
@@ -499,20 +505,8 @@ export function App() {
             }}
             className="text-zinc-400 hover:text-white transition cursor-pointer"
           >
-            Contato & Redes 📬
+            Contato
           </button>
-          <span className="text-zinc-700">•</span>
-          <a
-            href="#admin"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.hash = 'admin';
-              setIsAdminRoute(true);
-            }}
-            className="text-zinc-500 hover:text-zinc-300 transition cursor-pointer"
-          >
-            Curadoria
-          </a>
         </div>
         <p className="text-[11px] text-zinc-600 px-4">
           Tá pro Brick • Adivinhe o Preço dos Anúncios • Conteúdo público e educativo • Não afiliado à Tabela Fipe
@@ -528,7 +522,7 @@ export function App() {
         onContinuePlaying={handleContinuePlaying}
         onEndRound={handleEndRound}
         onNextChallenge={handleNextChallenge}
-        hasNextChallenge={hasNextChallenge}
+        hasNextChallenge={ENABLE_ARCHIVE_MODE && hasNextChallenge}
         onOpenStats={() => setIsStatsOpen(true)}
         onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
         challengeNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}

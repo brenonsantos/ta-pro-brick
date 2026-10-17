@@ -34,12 +34,12 @@ export const Header: React.FC<HeaderProps> = ({
             Tá pro <span className="text-amber-400">Brick</span>
             {gameMode === 'training' && (
               <span className="rounded-md bg-amber-500/20 px-1.5 py-0.5 text-[10px] font-bold text-amber-300 border border-amber-500/30 uppercase">
-                Treino
+                Arquivo
               </span>
             )}
           </h1>
           <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-400">
-            {gameMode === 'daily' ? `Desafio Diário #${dayNumber || 1}` : 'Modo Garagem'}
+            {gameMode === 'daily' ? `Desafio Diário #${dayNumber || 1}` : 'Arquivo de Desafios'}
           </p>
         </div>
       </div>
@@ -54,12 +54,12 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'border-zinc-800 bg-zinc-900/90 text-zinc-400 hover:text-white hover:border-zinc-700'
                 : 'border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20'
             }`}
-            title={gameMode === 'daily' ? 'Ir para Modo Treino' : 'Voltar ao Desafio Diário'}
+            title={gameMode === 'daily' ? 'Ir para o Arquivo' : 'Voltar ao Desafio Diário'}
           >
             {gameMode === 'daily' ? (
               <>
                 <Car className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="hidden sm:inline">Treino</span>
+                <span className="hidden sm:inline">Arquivo</span>
               </>
             ) : (
               <>

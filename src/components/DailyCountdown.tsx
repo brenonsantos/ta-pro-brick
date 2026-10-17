@@ -83,7 +83,7 @@ export const DailyCountdown: React.FC<DailyCountdownProps> = ({
             className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-3 text-xs sm:text-sm font-bold text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 transition cursor-pointer"
           >
             <Car className="h-4 w-4 text-amber-400" />
-            Modo Treino 🚗
+            Arquivo
           </button>
         )}
       </div>

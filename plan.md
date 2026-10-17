@@ -185,3 +185,29 @@ Implement essential legal, community, and monetization-ready foundations:
 - [x] **Validation & Verification**:
   - 35 unit tests passing (`npm test`).
   - Production build clean with zero TypeScript errors (`npm run build`).
+
+---
+
+## Milestone 9: Desativação Temporária de Ads, Treino/Arquivo & Limpeza do Rodapé
+### Objective
+Refine the UI per user instruction:
+1. Temporarily disable the ad banner slot until officially approved/needed.
+2. Hide the "Curadoria" link from the public footer (keeping direct `/admin` and `/#admin` access intact for admins).
+3. Remove emojis from footer links ("Sugerir Anúncio", "Remover Anúncio", "Contato").
+4. Temporarily disable "Modo Treino" (saving it to be relaunched in the future as "Arquivo").
+
+### Tasks
+- [x] **Disable Ad Banner in `App.tsx`**:
+  - Remove/guard `<AdBannerSlot />` with flag so no ad placeholder renders.
+- [x] **Clean Footer in `App.tsx`**:
+  - Remove emojis: "Sugerir Anúncio", "Remover Anúncio", "Contato".
+  - Hide "Curadoria" button and separator dot from the footer.
+- [x] **Disable Training Mode & Prepare Future "Arquivo"**:
+  - Hide toggle button in `Header.tsx` by not passing toggle handler.
+  - Hide "Modo Treino" button in `DailyCountdown.tsx`.
+  - Disable vehicle switcher and multi-car next round in `VictoryModal.tsx`.
+  - Document that the future re-introduction will be named "Arquivo".
+- [x] **Validation & Verification**:
+  - Verify all 36 tests pass with `npm test`.
+  - Verify production build with `npm run build`.
+

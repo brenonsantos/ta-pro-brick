@@ -32,4 +32,27 @@ describe('App component', () => {
     const photoCounterMatches = html.match(/📷[\s\S]*?\d+[\s\S]*?\/[\s\S]*?\d+/g) || [];
     expect(photoCounterMatches.length).toBe(1);
   });
+
+  it('renders clean footer without emojis and without curadoria button, with ads and training disabled', () => {
+    const html = renderToString(React.createElement(App));
+
+    // Footer links without emojis
+    expect(html).toContain('Sugerir Anúncio');
+    expect(html).toContain('Remover Anúncio');
+    expect(html).toContain('Contato');
+    expect(html).not.toContain('Sugerir Anúncio 🚗');
+    expect(html).not.toContain('Remover Anúncio 🛡️');
+    expect(html).not.toContain('Contato &amp; Redes 📬');
+
+    // Curadoria button hidden from regular footer
+    expect(html).not.toContain('Curadoria');
+
+    // Ads disabled
+    expect(html).not.toContain('Espaço Patrocinado');
+
+    // Treino toggle disabled in header
+    expect(html).not.toContain('title="Ir para o Arquivo"');
+    expect(html).not.toContain('title="Ir para Modo Treino"');
+  });
 });
+
