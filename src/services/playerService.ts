@@ -34,13 +34,16 @@ export async function syncPlayerProfileToSupabase(profile: PlayerProfile): Promi
     try {
       const { error } = await supabase
         .from('players')
-        .upsert({
-          id: profile.id,
-          nickname: profile.nickname,
-          is_anonymous: profile.isAnonymous,
-          avatar_url: profile.avatarUrl || null,
-          updated_at: new Date().toISOString(),
-        });
+        .upsert(
+          {
+            id: profile.id,
+            nickname: profile.nickname,
+            is_anonymous: profile.isAnonymous,
+            avatar_url: profile.avatarUrl || null,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
       if (error) {
         console.warn('Aviso ao sincronizar perfil com Supabase:', error.message);
       }
@@ -99,12 +102,15 @@ export async function updatePlayerNickname(newNickname: string): Promise<PlayerP
   }
 
   if (isSupabaseConfigured() && supabase) {
-    await supabase.from('players').upsert({
-      id: updated.id,
-      nickname: updated.nickname,
-      is_anonymous: updated.isAnonymous,
-      updated_at: new Date().toISOString(),
-    });
+    await supabase.from('players').upsert(
+      {
+        id: updated.id,
+        nickname: updated.nickname,
+        is_anonymous: updated.isAnonymous,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'id' }
+    );
   }
 
   return updated;

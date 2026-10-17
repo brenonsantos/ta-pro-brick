@@ -1,21 +1,26 @@
 /// <reference types="vite/client" />
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+const rawSupabaseUrl = ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim();
+const rawSupabaseAnonKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+
+// Sanitiza a URL caso o usuário tenha colado com /rest/v1 ou barras no final
+const cleanSupabaseUrl = rawSupabaseUrl
+  .replace(/\/rest\/v1\/?$/, '')
+  .replace(/\/+$/, '');
 
 export const isSupabaseConfigured = (): boolean => {
   return (
-    typeof supabaseUrl === 'string' &&
-    supabaseUrl.trim().length > 0 &&
-    typeof supabaseAnonKey === 'string' &&
-    supabaseAnonKey.trim().length > 0 &&
-    !supabaseUrl.includes('seu-projeto')
+    typeof cleanSupabaseUrl === 'string' &&
+    cleanSupabaseUrl.length > 0 &&
+    typeof rawSupabaseAnonKey === 'string' &&
+    rawSupabaseAnonKey.length > 0 &&
+    !cleanSupabaseUrl.includes('seu-projeto')
   );
 };
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured()
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+  ? createClient(cleanSupabaseUrl, rawSupabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
