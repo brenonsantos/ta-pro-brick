@@ -151,32 +151,47 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
 
           {/* Bookmarklet & Helper Box */}
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-3.5 text-xs text-zinc-300 space-y-2.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="font-bold text-white flex items-center gap-1.5">
                 <Bookmark className="h-3.5 w-3.5 text-amber-400" />
                 Extrator do Facebook Marketplace
               </span>
-              <button
-                type="button"
-                onClick={handleCopyBookmarklet}
-                className="flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-[11px] font-bold text-amber-400 hover:bg-zinc-700 transition cursor-pointer"
-              >
-                {copiedBookmarklet ? (
-                  <>
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    <span className="text-emerald-400">Copiado!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3" />
-                    <span>Copiar Bookmarklet</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <a
+                  href={FB_MARKETPLACE_BOOKMARKLET}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleCopyBookmarklet();
+                  }}
+                  className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1 text-[11px] font-black text-black hover:bg-amber-400 transition cursor-grab shadow-sm"
+                  title="Clique e arraste este botão direto para a Barra de Favoritos do seu navegador"
+                >
+                  <span>🧱</span>
+                  <span>Arraste para os Favoritos</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={handleCopyBookmarklet}
+                  className="flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800 px-2 py-1 text-[11px] font-bold text-zinc-300 hover:text-white hover:bg-zinc-700 transition cursor-pointer"
+                  title="Copiar código javascript para colar no favorito"
+                >
+                  {copiedBookmarklet ? (
+                    <>
+                      <Check className="h-3 w-3 text-emerald-400" />
+                      <span className="text-emerald-400">Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3" />
+                      <span>Copiar Código</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <p className="text-[11px] text-zinc-400 leading-relaxed">
-              <strong>Como usar:</strong> Salve o botão acima como favorito no seu navegador. Quando abrir qualquer anúncio de carro no Facebook Marketplace, clique no favorito e o script copiará todos os dados e fotos em alta resolução direto para sua área de transferência.
+              <strong>Como instalar:</strong> Arraste o botão amarelo acima para a barra de favoritos do navegador. Quando abrir qualquer carro no Facebook Marketplace, clique no favorito e o modal aparecerá na hora!
             </p>
           </div>
         </div>
