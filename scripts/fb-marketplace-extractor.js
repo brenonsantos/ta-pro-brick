@@ -397,8 +397,11 @@
     `;
 
     // Listeners do modal
-    document.getElementById('tpb-close-btn').addEventListener('click', closeModal);
-    document.getElementById('tpb-cancel-btn').addEventListener('click', closeModal);
+    const closeBtn = modal.querySelector('#tpb-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    const cancelBtn = modal.querySelector('#tpb-cancel-btn');
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
     // Remoção individual de foto
     modal.querySelectorAll('.tpb-del-photo').forEach((btn) => {
@@ -410,32 +413,34 @@
     });
 
     // Copiar para clipboard
-    const copyBtn = document.getElementById('tpb-copy-btn');
-    copyBtn.addEventListener('click', async () => {
-      const json = JSON.stringify(extracted, null, 2);
-      try {
-        await navigator.clipboard.writeText(json);
-        copyBtn.style.background = '#10b981';
-        copyBtn.style.color = '#ffffff';
-        copyBtn.innerHTML = '<span>✓</span> Copiado para a Área de Transferência!';
-        setTimeout(() => {
-          closeModal();
-        }, 1200);
-      } catch (err) {
-        const ta = document.createElement('textarea');
-        ta.value = json;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        document.body.removeChild(ta);
-        copyBtn.style.background = '#10b981';
-        copyBtn.style.color = '#ffffff';
-        copyBtn.innerHTML = '<span>✓</span> Copiado!';
-        setTimeout(() => {
-          closeModal();
-        }, 1200);
-      }
-    });
+    const copyBtn = modal.querySelector('#tpb-copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        const json = JSON.stringify(extracted, null, 2);
+        try {
+          await navigator.clipboard.writeText(json);
+          copyBtn.style.background = '#10b981';
+          copyBtn.style.color = '#ffffff';
+          copyBtn.innerHTML = '<span>✓</span> Copiado para a Área de Transferência!';
+          setTimeout(() => {
+            closeModal();
+          }, 1200);
+        } catch (err) {
+          const ta = document.createElement('textarea');
+          ta.value = json;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          copyBtn.style.background = '#10b981';
+          copyBtn.style.color = '#ffffff';
+          copyBtn.innerHTML = '<span>✓</span> Copiado!';
+          setTimeout(() => {
+            closeModal();
+          }, 1200);
+        }
+      });
+    }
   }
 
   function closeModal() {
@@ -449,7 +454,7 @@
     if (e.target === overlay) closeModal();
   });
 
-  renderModalContent();
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
+  renderModalContent();
 })();
