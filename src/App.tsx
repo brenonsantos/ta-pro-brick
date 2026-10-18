@@ -512,6 +512,7 @@ export function App() {
           isBalancedLayout={true}
           highContrastLocks={true}
           unlockedClueGlow={true}
+          clueDisclosureMode="compact-indicator"
         />
 
         {/* Inline Feedback Banner (Especially useful in Option A) */}
