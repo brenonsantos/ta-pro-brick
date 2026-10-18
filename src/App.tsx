@@ -508,8 +508,10 @@ export function App() {
             />
 
             <WeeklyLeaderboardWidget
-              onOpenLeaderboard={() => {
-                setLeaderboardInitialTab('weekly');
+              challengeId={dailyChallenge.id}
+              dayNumber={dailyChallengeNumber}
+              onOpenLeaderboard={(tab) => {
+                setLeaderboardInitialTab(tab || 'daily');
                 setIsLeaderboardOpen(true);
               }}
             />

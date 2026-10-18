@@ -349,3 +349,28 @@ Streamline the post-game experience on the main screen:
   - Added and updated unit tests for `DailyCountdown` and `shareText`.
   - Verified all 60 tests pass (`npm test`) and production build succeeds (`npm run build`).
   - Mobile viewport screenshot captured and verified.
+
+---
+
+## Milestone 16: Dual Daily & Weekly Ranking Widget on Home Screen
+### Objective
+Transform the post-game ranking widget on the home screen into a dual daily/weekly ranking hub with an intuitive tab switcher:
+1. **Diário (Hoje)**: Displays player's position in today's challenge, score, attempts count, top 3 players of the day, and direct button to open the daily ranking table.
+2. **Semanal**: Displays player's position in the weekly leaderboard, total points, countdown to Sunday 00:00 reset, top 3 players of the week, and direct button to open the weekly ranking table.
+
+### Tasks
+- [x] **Enhance `WeeklyLeaderboardWidget.tsx` (or `HomeLeaderboardWidget.tsx`)**:
+  - Add segment toggle at the top: `[ 📅 Diário #X ] [ 🏆 Semanal ]`.
+  - Fetch both `getDailyLeaderboard(challengeId)` and `getWeeklyLeaderboard()` concurrently.
+  - Render relevant stats per tab:
+    - Daily: shows `#X chutes • HH:mm` for each player, today's top 3, current player's daily position.
+    - Weekly: shows `X vitórias • Y rodadas • Zera domingo 00h`, weekly top 3, current player's weekly position.
+  - Support `onOpenLeaderboard(tab: 'daily' | 'weekly')` so clicking "Ver tabela completa" or the footer button opens `LeaderboardModal` with that exact active tab.
+- [x] **Connect with `App.tsx`**:
+  - Pass `challengeId` and `dayNumber` to the widget.
+  - Forward `tab` from widget callback to `setLeaderboardInitialTab(tab)` and open `LeaderboardModal`.
+- [x] **Unit Tests & Verification**:
+  - Updated `src/components/__tests__/WeeklyLeaderboardWidget.test.tsx` to verify tab switching, daily and weekly content rendering, and callbacks.
+  - Ran `npm test` (61 tests passing) and `npm run build` (clean).
+  - Visual verification with mobile screenshots captured for both Daily and Weekly tabs.
+
