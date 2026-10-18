@@ -322,3 +322,30 @@ When a player finishes today's daily challenge and returns to the main screen, d
   - Add unit tests for `WeeklyLeaderboardWidget` in `src/components/__tests__/WeeklyLeaderboardWidget.test.tsx`.
   - Verify `npm test` (54/54 passing) and `npm run build` (clean).
   - Visual verification with browser automation / preview screenshot.
+
+---
+
+## Milestone 15: End-Screen Streamlining (Hide Input, Compact Round Result & Native Mobile Share)
+### Objective
+Streamline the post-game experience on the main screen:
+1. Hide the "Quanto o vendedor pediu?" input card once the round is completed since guessing is finished.
+2. Directly display a compact, high-impact round result card on the main screen (Asking Price, Best Guess, Difference/Heat band, Total Score, and link to original listing), eliminating the need for a separate "Ver Resultado" button.
+3. Integrate the Web Share API (`navigator.share`) so clicking "Compartilhar" on mobile devices opens the native OS share sheet (WhatsApp, Instagram, etc.), with automatic fallback to clipboard copy on desktop.
+
+### Tasks
+- [x] **Native Mobile Share Integration (`src/utils/shareText.ts`)**:
+  - Implement `shareGameResult({ text, title })` with Web Share API support (`navigator.share`) and graceful clipboard fallback.
+  - Unit tests added in `src/utils/__tests__/shareText.test.ts`.
+- [x] **Compact Result in `DailyCountdown.tsx`**:
+  - Receive score breakdown, asking price, best guess, and original listing URL.
+  - Render compact 3-column metrics strip: Preço Real do Anúncio, Seu Melhor Chute (com heat indicator e diferença formatada), Pontuação Final.
+  - Link to original ad ("Ver Anúncio Original no Marketplace ↗").
+  - Removed redundant "Ver Resultado" button in favor of direct on-screen summary + subtle secondary link for full stats.
+- [x] **Hide GuessInput on Completed in `App.tsx`**:
+  - Conditionally hide `<GuessInput />` when `currentGameState.status === 'completed'`.
+  - Connect `shareGameResult` to `handleShareDaily` and `VictoryModal.tsx`.
+  - Fire celebration confetti directly on completion without forcing modal obstruction.
+- [x] **Unit Tests & Verification**:
+  - Added and updated unit tests for `DailyCountdown` and `shareText`.
+  - Verified all 60 tests pass (`npm test`) and production build succeeds (`npm run build`).
+  - Mobile viewport screenshot captured and verified.

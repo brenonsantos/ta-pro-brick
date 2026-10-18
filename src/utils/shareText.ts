@@ -46,3 +46,49 @@ export function generateShareText(
 
   return `${header}\n${challengeTitle}\n\n${resultSummary}\n\n${emojiRows}\n\nJogue em: taprobrick.com.br`;
 }
+
+export type ShareOutcome = 'shared' | 'copied' | 'dismissed';
+
+/**
+ * Compartilha o resultado do jogo abrindo o menu nativo do celular (WhatsApp, Instagram, etc)
+ * via Web Share API quando disponível, com fallback automático para cópia na área de transferência.
+ */
+export async function shareGameResult(options: {
+  text: string;
+  title?: string;
+}): Promise<ShareOutcome> {
+  const { text, title = 'Tá pro Brick' } = options;
+
+  // 1. Tentar Web Share API nativo (iOS / Android / navegadores com suporte)
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      const canShare = !navigator.canShare || navigator.canShare({ text });
+      if (canShare) {
+        await navigator.share({
+          title,
+          text,
+        });
+        return 'shared';
+      }
+    } catch (err: any) {
+      // Usuário cancelou ou fechou a folha de compartilhamento nativa sem selecionar app
+      if (err?.name === 'AbortError') {
+        return 'dismissed';
+      }
+      // Se falhou por outro motivo (ex: permissões), segue para o fallback de clipboard
+    }
+  }
+
+  // 2. Fallback: Copiar para área de transferência
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return 'copied';
+    }
+  } catch {
+    // Ambientes sem suporte a clipboard
+  }
+
+  return 'copied';
+}
+

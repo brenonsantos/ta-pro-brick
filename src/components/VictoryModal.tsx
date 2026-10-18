@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti';
 import { GameState } from '../types/game';
 import { ScoreBreakdown } from '../utils/gameLogic';
 import { formatBRL } from '../utils/currency';
-import { generateShareText } from '../utils/shareText';
+import { generateShareText, shareGameResult } from '../utils/shareText';
 import { Trophy, Share2, Check, ArrowRight, AlertTriangle, ExternalLink, BarChart2, X, Eye } from 'lucide-react';
 import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
@@ -65,14 +65,12 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
       challengeNumber
     );
 
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
-      }
-    } catch {
-      // Fallback
+    const outcome = await shareGameResult({
+      text,
+      title: challengeNumber ? `Tá pro Brick #${challengeNumber}` : 'Tá pro Brick',
+    });
+
+    if (outcome === 'copied' || outcome === 'shared') {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }

@@ -33,7 +33,8 @@ import {
   getDailyChallengeIndex,
   getDailyChallengeNumber,
 } from './utils/dailyChallenge';
-import { generateShareText } from './utils/shareText';
+import { generateShareText, shareGameResult } from './utils/shareText';
+import confetti from 'canvas-confetti';
 import { DailyCountdown } from './components/DailyCountdown';
 import { WeeklyLeaderboardWidget } from './components/WeeklyLeaderboardWidget';
 import { loadActiveChallenges } from './services/challengeService';
@@ -244,13 +245,12 @@ export function App() {
       dayNumber: dailyChallengeNumber,
     });
 
-    try {
-      if (navigator.clipboard) {
-        await navigator.clipboard.writeText(text);
-        setIsShareCopied(true);
-        setTimeout(() => setIsShareCopied(false), 2500);
-      }
-    } catch {
+    const outcome = await shareGameResult({
+      text,
+      title: `Tá pro Brick #${dailyChallengeNumber}`,
+    });
+
+    if (outcome === 'copied' || outcome === 'shared') {
       setIsShareCopied(true);
       setTimeout(() => setIsShareCopied(false), 2500);
     }
@@ -333,7 +333,16 @@ export function App() {
         won: isWin,
       });
 
-      setIsVictoryModalOpen(true);
+      if (isWin) {
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#f59e0b', '#10b981', '#8b5cf6', '#3b82f6'],
+        });
+      }
+      setIsVictoryModalOpen(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
@@ -394,7 +403,8 @@ export function App() {
       won: isWin,
     });
 
-    setIsVictoryModalOpen(true);
+    setIsVictoryModalOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectChallenge = (targetChallenge: Challenge) => {
@@ -490,6 +500,11 @@ export function App() {
               onShareResult={handleShareDaily}
               onOpenResult={() => setIsVictoryModalOpen(true)}
               isCopied={isShareCopied}
+              scoreBreakdown={scoreBreakdown}
+              askingPrice={dailyChallenge.askingPrice}
+              originalUrl={dailyChallenge.originalUrl}
+              attemptsUsed={currentGameState.guesses.length}
+              maxAttempts={currentGameState.maxAttempts}
             />
 
             <WeeklyLeaderboardWidget
@@ -528,16 +543,18 @@ export function App() {
           />
         )}
 
-        {/* Input Bar */}
-        <GuessInput
-          key={`guess-${activeChallenge.id}`}
-          initialValue={currentGameState.guesses[currentGameState.guesses.length - 1]?.guessValue ?? 0}
-          onConfirmGuess={handleConfirmGuess}
-          disabled={isInputDisabled}
-          useAmberFocus={true}
-          currentAttempt={Math.min(currentGameState.guesses.length + 1, currentGameState.maxAttempts)}
-          maxAttempts={currentGameState.maxAttempts}
-        />
+        {/* Input Bar: Hidden when round is completed since guessing is finished */}
+        {currentGameState.status !== 'completed' && (
+          <GuessInput
+            key={`guess-${activeChallenge.id}`}
+            initialValue={currentGameState.guesses[currentGameState.guesses.length - 1]?.guessValue ?? 0}
+            onConfirmGuess={handleConfirmGuess}
+            disabled={isInputDisabled}
+            useAmberFocus={true}
+            currentAttempt={Math.min(currentGameState.guesses.length + 1, currentGameState.maxAttempts)}
+            maxAttempts={currentGameState.maxAttempts}
+          />
+        )}
 
         {/* Guess History (Wordle Style) */}
         <GuessHistory
