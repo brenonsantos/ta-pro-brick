@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Trophy } from 'lucide-react';
 import { Header } from './components/Header';
 import { VehicleSelector } from './components/VehicleSelector';
 import { ClueViewer } from './components/ClueViewer';
@@ -36,6 +35,7 @@ import {
 } from './utils/dailyChallenge';
 import { generateShareText } from './utils/shareText';
 import { DailyCountdown } from './components/DailyCountdown';
+import { WeeklyLeaderboardWidget } from './components/WeeklyLeaderboardWidget';
 import { loadActiveChallenges } from './services/challengeService';
 import mockChallengesData from './data/mockChallenges.json';
 
@@ -81,6 +81,7 @@ export function App() {
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
   const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
+  const [leaderboardInitialTab, setLeaderboardInitialTab] = useState<'daily' | 'weekly'>('daily');
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
   const [contactInitialTab, setContactInitialTab] = useState<'suggest' | 'remove' | 'contact'>('suggest');
 
@@ -448,7 +449,10 @@ export function App() {
       <Header
         onOpenHelp={() => setIsHelpOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
-        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
+        onOpenLeaderboard={() => {
+          setLeaderboardInitialTab('daily');
+          setIsLeaderboardOpen(true);
+        }}
         dayNumber={dailyChallengeNumber}
         gameMode={gameMode}
         onToggleGameMode={ENABLE_ARCHIVE_MODE ? () => setGameMode((m) => (m === 'daily' ? 'training' : 'daily')) : undefined}
@@ -477,28 +481,23 @@ export function App() {
           </div>
         )}
 
-        {/* If Daily Challenge is completed, show the Countdown Banner */}
+        {/* If Daily Challenge is completed, show Countdown Banner and Weekly Leaderboard Widget */}
         {gameMode === 'daily' && isDailyCompleted && (
-          <DailyCountdown
-            dayNumber={dailyChallengeNumber}
-            onSwitchToTraining={ENABLE_ARCHIVE_MODE ? () => setGameMode('training') : undefined}
-            onShareResult={handleShareDaily}
-            onOpenResult={() => setIsVictoryModalOpen(true)}
-            isCopied={isShareCopied}
-          />
-        )}
+          <div className="space-y-4">
+            <DailyCountdown
+              dayNumber={dailyChallengeNumber}
+              onSwitchToTraining={ENABLE_ARCHIVE_MODE ? () => setGameMode('training') : undefined}
+              onShareResult={handleShareDaily}
+              onOpenResult={() => setIsVictoryModalOpen(true)}
+              isCopied={isShareCopied}
+            />
 
-        {/* Floating/Inline button to reopen result if user dismissed modal */}
-        {currentGameState.status === 'completed' && !isVictoryModalOpen && (
-          <div className="flex justify-center animate-in fade-in">
-            <button
-              type="button"
-              onClick={() => setIsVictoryModalOpen(true)}
-              className="flex items-center gap-2 rounded-2xl bg-amber-500/10 border border-amber-500/30 px-5 py-2.5 text-xs sm:text-sm font-bold text-amber-300 hover:bg-amber-500/20 transition cursor-pointer shadow-lg"
-            >
-              <Trophy className="h-4 w-4 text-amber-400" />
-              Ver Resultado da Rodada 🏆
-            </button>
+            <WeeklyLeaderboardWidget
+              onOpenLeaderboard={() => {
+                setLeaderboardInitialTab('weekly');
+                setIsLeaderboardOpen(true);
+              }}
+            />
           </div>
         )}
 
@@ -604,7 +603,10 @@ export function App() {
         onNextChallenge={handleNextChallenge}
         hasNextChallenge={ENABLE_ARCHIVE_MODE && hasNextChallenge}
         onOpenStats={() => setIsStatsOpen(true)}
-        onOpenLeaderboard={() => setIsLeaderboardOpen(true)}
+        onOpenLeaderboard={() => {
+          setLeaderboardInitialTab('weekly');
+          setIsLeaderboardOpen(true);
+        }}
         challengeNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
       />
 
@@ -626,6 +628,7 @@ export function App() {
         challengeId={activeChallenge.id}
         hasPlayedToday={currentGameState.status === 'completed' || currentGameState.status === 'won_can_continue'}
         dayNumber={gameMode === 'daily' ? dailyChallengeNumber : undefined}
+        initialTab={leaderboardInitialTab}
       />
 
       <ContactModal

@@ -22,6 +22,7 @@ interface LeaderboardModalProps {
   challengeId: string;
   hasPlayedToday: boolean;
   dayNumber?: number;
+  initialTab?: 'daily' | 'weekly';
 }
 
 export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
@@ -30,10 +31,17 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   challengeId,
   hasPlayedToday,
   dayNumber = 1,
+  initialTab = 'daily',
 }) => {
   useBrowserBackClose(isOpen, onClose, 'leaderboard-modal');
 
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>(initialTab);
+
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
   const [profile, setProfile] = useState<PlayerProfile>(() => getOrCreatePlayerProfile());
   const [isEditingNick, setIsEditingNick] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname);

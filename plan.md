@@ -284,3 +284,41 @@ Enable mobile and desktop players to inspect vehicle photos in high resolution b
   - Verify on desktop and mobile viewports.
   - Run `npm test` (39/39 passing) and `npm run build` (clean).
   - Verify touch gestures (pinch, double-tap, pan, swipe).
+
+---
+
+## Milestone 13: Browser Back Navigation Safety & Modal Lifecycle
+### Objective
+Prevent browser back actions from unintentionally leaving the site or closing newly opened tabs when dismissing modals, ensuring `history.back()` is only dispatched when a user-initiated navigation entry exists in the current session.
+
+### Tasks
+- [x] **Safety guard in `useBrowserBackClose.ts`**:
+  - Add `isFirstRenderRef` to prevent pushing history states on the initial page mount.
+- [x] **Safety checks in `modalHistoryManager.ts`**:
+  - Track `hasPushedHistory` per modal entry and verify `window.history.state?.tpbModal === id` before calling `window.history.back()`.
+- [x] **Initial state in `App.tsx`**:
+  - Initialize `isVictoryModalOpen` to `false` so returning users land directly on the main screen without modal intrusion.
+- [x] **Verification**:
+  - Unit tests updated (52/52 passing). Real browser CDP automation verified tab stays open.
+
+---
+
+## Milestone 14: Weekly Leaderboard Widget on Main Screen
+### Objective
+When a player finishes today's daily challenge and returns to the main screen, display a Weekly Leaderboard preview widget below the `DailyCountdown` banner. This gives immediate competitive feedback (weekly rank, top 3 players, countdown to Sunday 00:00 reset) and a quick button to open the full leaderboard.
+
+### Tasks
+- [x] **Create `WeeklyLeaderboardWidget.tsx`**:
+  - Display current week reset status ("Zera domingo 00h • Xd Yh restantes").
+  - Player's current weekly position card (rank, nickname, total points, games played/won).
+  - Top 3 leaderboard podium list (gold, silver, bronze medals).
+  - "Ver Ranking Completo 🏆" button to open `LeaderboardModal` with the weekly tab preselected.
+- [x] **Enhance `LeaderboardModal.tsx`**:
+  - Support `initialTab?: 'daily' | 'weekly'` prop to switch to weekly tab when triggered by the widget.
+- [x] **Integrate into `App.tsx`**:
+  - Render `WeeklyLeaderboardWidget` below `DailyCountdown` when `gameMode === 'daily' && isDailyCompleted`.
+  - Pass `onOpenWeeklyLeaderboard` callback to open `LeaderboardModal` with weekly tab.
+- [x] **Unit Tests & Verification**:
+  - Add unit tests for `WeeklyLeaderboardWidget` in `src/components/__tests__/WeeklyLeaderboardWidget.test.tsx`.
+  - Verify `npm test` (54/54 passing) and `npm run build` (clean).
+  - Visual verification with browser automation / preview screenshot.
