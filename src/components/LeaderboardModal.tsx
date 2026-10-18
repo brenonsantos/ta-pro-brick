@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, X, Edit2, Check, Flame, Shield, LogOut } from 'lucide-react';
+import { Trophy, X, Edit2, Flame, Shield, LogOut, Calendar, Check } from 'lucide-react';
 import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 import {
   getDailyLeaderboard,
-  getAllTimeLeaderboard,
+  getWeeklyLeaderboard,
   LeaderboardEntry,
-  AllTimeLeaderboardEntry,
+  WeeklyLeaderboardEntry,
 } from '../services/rankingService';
+import { getCurrentWeekRange } from '../utils/dailyChallenge';
 import {
   getOrCreatePlayerProfile,
   updatePlayerNickname,
@@ -32,29 +33,36 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
 }) => {
   useBrowserBackClose(isOpen, onClose, 'leaderboard-modal');
 
-  const [activeTab, setActiveTab] = useState<'daily' | 'allTime'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly'>('daily');
   const [profile, setProfile] = useState<PlayerProfile>(() => getOrCreatePlayerProfile());
   const [isEditingNick, setIsEditingNick] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(profile.nickname);
   const [dailyEntries, setDailyEntries] = useState<LeaderboardEntry[]>([]);
-  const [allTimeEntries, setAllTimeEntries] = useState<AllTimeLeaderboardEntry[]>([]);
+  const [weeklyEntries, setWeeklyEntries] = useState<WeeklyLeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const weekRange = getCurrentWeekRange();
+
+  const loadLeaderboards = async () => {
+    setIsLoading(true);
+    try {
+      const [daily, weekly] = await Promise.all([
+        getDailyLeaderboard(challengeId),
+        getWeeklyLeaderboard(),
+      ]);
+      setDailyEntries(daily);
+      setWeeklyEntries(weekly);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) return;
 
     setProfile(getOrCreatePlayerProfile());
     setNicknameInput(getOrCreatePlayerProfile().nickname);
-    setIsLoading(true);
-
-    Promise.all([
-      getDailyLeaderboard(challengeId),
-      getAllTimeLeaderboard(),
-    ]).then(([daily, allTime]) => {
-      setDailyEntries(daily);
-      setAllTimeEntries(allTime);
-      setIsLoading(false);
-    });
+    loadLeaderboards();
   }, [isOpen, challengeId]);
 
   if (!isOpen) return null;
@@ -64,25 +72,14 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
     const updated = await updatePlayerNickname(nicknameInput);
     setProfile(updated);
     setIsEditingNick(false);
-    // Recarrega rankings para refletir o novo nome
-    const [daily, allTime] = await Promise.all([
-      getDailyLeaderboard(challengeId),
-      getAllTimeLeaderboard(),
-    ]);
-    setDailyEntries(daily);
-    setAllTimeEntries(allTime);
+    loadLeaderboards();
   };
 
   const handleSignOut = async () => {
     const reset = await signOutPlayer();
     setProfile(reset);
     setNicknameInput(reset.nickname);
-    const [daily, allTime] = await Promise.all([
-      getDailyLeaderboard(challengeId),
-      getAllTimeLeaderboard(),
-    ]);
-    setDailyEntries(daily);
-    setAllTimeEntries(allTime);
+    loadLeaderboards();
   };
 
   const getRankBadge = (rank: number) => {
@@ -216,17 +213,30 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('allTime')}
+            onClick={() => setActiveTab('weekly')}
             className={`flex items-center justify-center gap-1.5 rounded-lg py-1.5 text-xs font-bold transition cursor-pointer ${
-              activeTab === 'allTime'
+              activeTab === 'weekly'
                 ? 'bg-amber-500 text-zinc-950 shadow'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
             <Trophy className="h-3.5 w-3.5" />
-            Geral (Total)
+            Semana
           </button>
         </div>
+
+        {/* Weekly Countdown Ribbon */}
+        {activeTab === 'weekly' && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300 shrink-0">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Calendar className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span>Disputa Semanal</span>
+            </div>
+            <span className="text-[11px] font-semibold text-amber-200/90">
+              ⏱️ {weekRange.timeRemainingText}
+            </span>
+          </div>
+        )}
 
         {/* Leaderboard List / Anti-Spoiler Banner */}
         <div className="mt-3.5 flex-1 overflow-y-auto min-h-[220px] space-y-1.5 pr-1">
@@ -269,7 +279,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                       <p className="text-xs sm:text-sm font-bold text-white truncate flex items-center gap-1.5">
                         {entry.nickname}
                         {entry.isCurrentPlayer && (
-                          <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
+                           <span className="rounded bg-amber-500/20 px-1 py-0.2 text-[9px] font-black text-amber-300 uppercase border border-amber-500/40">
                             Você
                           </span>
                         )}
@@ -290,16 +300,16 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
               ))
             )
           ) : (
-            allTimeEntries.length === 0 ? (
+            weeklyEntries.length === 0 ? (
               <div className="flex flex-col items-center justify-center text-center p-8 rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 my-4">
                 <Trophy className="h-8 w-8 text-zinc-600 mb-2" />
-                <h3 className="text-sm font-bold text-white">Nenhuma pontuação acumulada ainda</h3>
+                <h3 className="text-sm font-bold text-white">Nenhuma pontuação na semana ainda</h3>
                 <p className="text-xs text-zinc-400 mt-1 max-w-[260px]">
-                  Conclua os desafios diários para acumular pontos no ranking geral de pilotos!
+                  Conclua os desafios diários para acumular pontos na corrida semanal de pilotos!
                 </p>
               </div>
             ) : (
-              allTimeEntries.map((entry) => (
+              weeklyEntries.map((entry) => (
                 <div
                   key={entry.playerId}
                   className={`flex items-center justify-between rounded-xl px-3 py-2.5 transition border ${
@@ -322,7 +332,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
                         )}
                       </p>
                       <p className="text-[10px] text-zinc-400">
-                        {entry.gamesWon} vitórias em {entry.gamesPlayed} jogos
+                        {entry.gamesWon} {entry.gamesWon === 1 ? 'vitória' : 'vitórias'} em {entry.gamesPlayed} {entry.gamesPlayed === 1 ? 'desafio' : 'desafios'} nesta semana
                       </p>
                     </div>
                   </div>
@@ -342,7 +352,7 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
         {/* Footer info */}
         <div className="mt-3 pt-3 border-t border-zinc-800 text-center shrink-0">
           <p className="text-[11px] text-zinc-500">
-            A pontuação recompensa precisão no chute e bônus de risco.
+            A pontuação recompensa precisão no chute e bônus de risco. O ranking semanal zera todo domingo às 00:00.
           </p>
         </div>
       </div>

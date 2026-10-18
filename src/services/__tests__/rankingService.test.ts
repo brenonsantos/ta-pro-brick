@@ -3,6 +3,7 @@ import {
   submitDailyResult,
   getDailyLeaderboard,
   getAllTimeLeaderboard,
+  getWeeklyLeaderboard,
 } from '../rankingService';
 import { updatePlayerNickname, getOrCreatePlayerProfile } from '../playerService';
 
@@ -91,5 +92,34 @@ describe('rankingService (Ranking por Pontos)', () => {
     expect(myEntry).toBeDefined();
     expect(myEntry?.totalScore).toBe(1550);
     expect(myEntry?.gamesPlayed).toBe(2);
+  });
+
+  it('agrega a pontuação semanal e respeita o ciclo com reset no domingo', async () => {
+    // Domingo 18 de Outubro de 2026
+    const sundayRef = new Date(2026, 9, 18, 12, 0, 0);
+
+    await submitDailyResult({
+      challengeId: 'week-car-1',
+      score: 750,
+      attemptsCount: 3,
+      bestGuess: 30000,
+      won: true,
+    });
+
+    await submitDailyResult({
+      challengeId: 'week-car-2',
+      score: 850,
+      attemptsCount: 2,
+      bestGuess: 40000,
+      won: true,
+    });
+
+    const weekly = await getWeeklyLeaderboard(sundayRef);
+    const myWeekly = weekly.find((e) => e.isCurrentPlayer);
+
+    expect(myWeekly).toBeDefined();
+    expect(myWeekly?.totalScore).toBe(1600);
+    expect(myWeekly?.gamesPlayed).toBe(2);
+    expect(myWeekly?.gamesWon).toBe(2);
   });
 });

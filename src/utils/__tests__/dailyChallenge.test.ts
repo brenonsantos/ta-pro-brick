@@ -4,6 +4,7 @@ import {
   getDailyChallengeNumber,
   getDailyChallengeIndex,
   getTimeUntilMidnight,
+  getCurrentWeekRange,
   EPOCH_DATE_STRING,
 } from '../dailyChallenge';
 
@@ -36,5 +37,40 @@ describe('dailyChallenge utility', () => {
     expect(time).toHaveProperty('minutes');
     expect(time).toHaveProperty('seconds');
     expect(time.formatted).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+  });
+
+  describe('getCurrentWeekRange (Ciclo Semanal com reset no domingo às 00:00)', () => {
+    it('inicia no domingo 00:00 e zera no próximo domingo 00:00 para um domingo', () => {
+      // 2026-10-18 é um Domingo
+      const sundayRef = new Date(2026, 9, 18, 10, 30, 0); // 18 de Outubro de 2026
+      const range = getCurrentWeekRange(sundayRef);
+
+      expect(range.startOfWeek.getDate()).toBe(18);
+      expect(range.startOfWeek.getHours()).toBe(0);
+      expect(range.startOfWeek.getMinutes()).toBe(0);
+
+      expect(range.endOfWeek.getDate()).toBe(25);
+      expect(range.endOfWeek.getHours()).toBe(0);
+      expect(range.daysRemaining).toBe(6);
+      expect(range.timeRemainingText).toContain('domingo 00h');
+    });
+
+    it('calcula o domingo anterior correto para uma quarta-feira e um sábado', () => {
+      // 2026-10-21 é Quarta-feira
+      const wednesdayRef = new Date(2026, 9, 21, 14, 0, 0);
+      const wedRange = getCurrentWeekRange(wednesdayRef);
+      expect(wedRange.startOfWeek.getDate()).toBe(18); // Domingo anterior
+      expect(wedRange.endOfWeek.getDate()).toBe(25); // Próximo domingo
+      expect(wedRange.daysRemaining).toBe(3);
+
+      // 2026-10-24 é Sábado (último dia da semana antes do reset de domingo 00h)
+      const saturdayRef = new Date(2026, 9, 24, 20, 0, 0);
+      const satRange = getCurrentWeekRange(saturdayRef);
+      expect(satRange.startOfWeek.getDate()).toBe(18);
+      expect(satRange.endOfWeek.getDate()).toBe(25);
+      expect(satRange.daysRemaining).toBe(0);
+      expect(satRange.hoursRemaining).toBe(4);
+      expect(satRange.timeRemainingText).toContain('4h (domingo 00h)');
+    });
   });
 });

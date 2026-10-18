@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import { getOrCreatePlayerProfile, syncPlayerProfileToSupabase } from './playerService';
+import { getCurrentWeekRange } from '../utils/dailyChallenge';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -10,6 +11,7 @@ export interface LeaderboardEntry {
   won: boolean;
   isCurrentPlayer: boolean;
   completedAt: string;
+  completedAtIso?: string;
 }
 
 export interface AllTimeLeaderboardEntry {
@@ -21,6 +23,8 @@ export interface AllTimeLeaderboardEntry {
   gamesWon: number;
   isCurrentPlayer: boolean;
 }
+
+export type WeeklyLeaderboardEntry = AllTimeLeaderboardEntry;
 
 export interface SubmitResultParams {
   challengeId: string;
@@ -57,6 +61,7 @@ function saveLocalLeaderboardStore(store: LocalResultStorage): void {
 
 export async function submitDailyResult(params: SubmitResultParams): Promise<void> {
   const profile = getOrCreatePlayerProfile();
+  const nowIso = new Date().toISOString();
   const completedAtTime = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
   // 1. Gravar localmente
@@ -73,6 +78,7 @@ export async function submitDailyResult(params: SubmitResultParams): Promise<voi
     won: params.won,
     isCurrentPlayer: true,
     completedAt: completedAtTime,
+    completedAtIso: nowIso,
   };
 
   const filtered = currentList.filter((e) => e.playerId !== profile.id);
@@ -230,4 +236,131 @@ export async function getAllTimeLeaderboard(): Promise<AllTimeLeaderboardEntry[]
   }
 
   return realEntries;
+}
+
+/**
+ * Consulta o Ranking Semanal de pilotos.
+ * O ciclo zera todo domingo às 00:00:00.
+ * Considera apenas desafios concluídos dentro da semana vigente (domingo 00h até o próximo domingo 00h).
+ */
+export async function getWeeklyLeaderboard(referenceDate?: Date): Promise<WeeklyLeaderboardEntry[]> {
+  const profile = getOrCreatePlayerProfile();
+  const { startOfWeek, endOfWeek } = getCurrentWeekRange(referenceDate);
+
+  if (isSupabaseConfigured() && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('daily_results')
+        .select(`
+          player_id,
+          score,
+          attempts_count,
+          won,
+          completed_at,
+          players (
+            nickname
+          )
+        `)
+        .gte('completed_at', startOfWeek.toISOString())
+        .lt('completed_at', endOfWeek.toISOString());
+
+      if (!error && data && data.length > 0) {
+        const playerMap = new Map<string, {
+          playerId: string;
+          nickname: string;
+          totalScore: number;
+          gamesPlayed: number;
+          gamesWon: number;
+          bestAttempts: number;
+          isCurrentPlayer: boolean;
+        }>();
+
+        data.forEach((item: any) => {
+          const pId = item.player_id;
+          const nick = item.players?.nickname || 'Piloto Anônimo';
+          const existing = playerMap.get(pId) || {
+            playerId: pId,
+            nickname: nick,
+            totalScore: 0,
+            gamesPlayed: 0,
+            gamesWon: 0,
+            bestAttempts: 6,
+            isCurrentPlayer: pId === profile.id,
+          };
+
+          existing.totalScore += item.score || 0;
+          existing.gamesPlayed += 1;
+          if (item.won) existing.gamesWon += 1;
+          if (item.attempts_count && item.attempts_count < existing.bestAttempts) {
+            existing.bestAttempts = item.attempts_count;
+          }
+          if (pId === profile.id) {
+            existing.nickname = profile.nickname;
+          }
+
+          playerMap.set(pId, existing);
+        });
+
+        const list = Array.from(playerMap.values());
+        list.sort((a, b) => {
+          if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+          if (b.gamesWon !== a.gamesWon) return b.gamesWon - a.gamesWon;
+          return a.bestAttempts - b.bestAttempts;
+        });
+
+        return list.slice(0, 50).map((item, index) => ({
+          rank: index + 1,
+          playerId: item.playerId,
+          nickname: item.nickname,
+          totalScore: item.totalScore,
+          gamesPlayed: item.gamesPlayed,
+          gamesWon: item.gamesWon,
+          isCurrentPlayer: item.isCurrentPlayer,
+        }));
+      }
+    } catch (err) {
+      console.warn('Falha na consulta remota de ranking semanal, usando fallback local:', err);
+    }
+  }
+
+  // Fallback Local: calcula a partir dos resultados salvos dentro da semana vigente
+  const store = getLocalLeaderboardStore();
+  let localTotalScore = 0;
+  let localGamesPlayed = 0;
+  let localGamesWon = 0;
+
+  Object.values(store).forEach((list) => {
+    const mine = list.find((e) => e.playerId === profile.id);
+    if (mine) {
+      let isWithinWeek = false;
+      if (mine.completedAtIso) {
+        const d = new Date(mine.completedAtIso);
+        isWithinWeek = d >= startOfWeek && d < endOfWeek;
+      } else {
+        // Registros sem timestamp explícito são considerados da semana corrente
+        isWithinWeek = true;
+      }
+
+      if (isWithinWeek) {
+        localTotalScore += mine.score;
+        localGamesPlayed += 1;
+        if (mine.won) localGamesWon += 1;
+      }
+    }
+  });
+
+  const weeklyEntries: WeeklyLeaderboardEntry[] = [];
+  if (localGamesPlayed > 0) {
+    weeklyEntries.push({
+      rank: 1,
+      playerId: profile.id,
+      nickname: profile.nickname,
+      totalScore: localTotalScore,
+      gamesPlayed: localGamesPlayed,
+      gamesWon: localGamesWon,
+      isCurrentPlayer: true,
+    });
+  }
+
+  return weeklyEntries;
 }
