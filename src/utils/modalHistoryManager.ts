@@ -7,6 +7,7 @@
 type ModalEntry = {
   id: string;
   onClose: () => void;
+  hasPushedHistory: boolean;
 };
 
 // Pilha global dos modais atualmente abertos
@@ -38,9 +39,13 @@ function ensureListener() {
 
 /**
  * Registra que um modal foi aberto.
- * Adiciona uma entrada no histórico do navegador via history.pushState.
+ * Adiciona uma entrada no histórico do navegador via history.pushState quando pushHistory=true.
  */
-export function registerModalOpen(id: string, onClose: () => void): void {
+export function registerModalOpen(
+  id: string,
+  onClose: () => void,
+  pushHistory: boolean = true
+): void {
   if (typeof window === 'undefined') return;
   ensureListener();
 
@@ -51,17 +56,21 @@ export function registerModalOpen(id: string, onClose: () => void): void {
     return;
   }
 
-  try {
-    window.history.pushState(
-      { tpbModal: id, timestamp: Date.now() },
-      '',
-      window.location.href
-    );
-  } catch {
-    // Ambientes restritivos de navegação
+  let hasPushed = false;
+  if (pushHistory) {
+    try {
+      window.history.pushState(
+        { tpbModal: id, timestamp: Date.now() },
+        '',
+        window.location.href
+      );
+      hasPushed = true;
+    } catch {
+      // Ambientes restritivos de navegação
+    }
   }
 
-  modalStack.push({ id, onClose });
+  modalStack.push({ id, onClose, hasPushedHistory: hasPushed });
 }
 
 /**
@@ -77,17 +86,28 @@ export function updateModalOnClose(id: string, onClose: () => void): void {
 /**
  * Registra que um modal foi fechado.
  * Se o modal ainda estiver na pilha (ou seja, fechou via 'X' ou backdrop e não pelo botão Voltar),
- * remove da pilha e desfaz o histórico extra criado via history.back().
+ * remove da pilha e desfaz o histórico extra criado via history.back() APENAS se tiver sido adicionado
+ * e for o topo atual do histórico.
  */
 export function registerModalClose(id: string): void {
   if (typeof window === 'undefined') return;
 
   const index = modalStack.findIndex((m) => m.id === id);
   if (index !== -1) {
+    const entry = modalStack[index];
     const isTop = index === modalStack.length - 1;
     modalStack.splice(index, 1);
 
-    if (isTop) {
+    // Proteção essencial: só chama window.history.back() se:
+    // 1. Este modal empurrou uma entrada de histórico na sessão atual (entry.hasPushedHistory)
+    // 2. Este modal era o topo da pilha
+    // 3. O estado atual da janela realmente pertence a este modal
+    const currentStateModal =
+      typeof window.history.state === 'object' && window.history.state !== null
+        ? (window.history.state as any).tpbModal
+        : null;
+
+    if (isTop && entry.hasPushedHistory && currentStateModal === id) {
       programmaticBackCount++;
       try {
         window.history.back();

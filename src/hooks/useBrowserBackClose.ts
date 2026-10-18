@@ -17,17 +17,24 @@ export function useBrowserBackClose(
   modalId?: string
 ): void {
   const isRegisteredRef = useRef(false);
+  const isFirstRenderRef = useRef(true);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   const id = modalId || 'modal';
 
   useEffect(() => {
+    const wasFirstRender = isFirstRenderRef.current;
+    isFirstRenderRef.current = false;
+
     if (isOpen && onClose) {
       if (!isRegisteredRef.current) {
+        // Se o modal já estava aberto no primeiro mount da página (ex: recarregou ou abriu nova aba),
+        // não adicionamos pushState para não alterar o histórico inicial nem fechar o site ao clicar no 'X'
+        const shouldPushHistory = !wasFirstRender;
         registerModalOpen(id, () => {
           onCloseRef.current?.();
-        });
+        }, shouldPushHistory);
         isRegisteredRef.current = true;
       } else {
         updateModalOnClose(id, () => {

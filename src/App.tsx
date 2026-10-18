@@ -79,7 +79,7 @@ export function App() {
   const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadPlayerStats());
   const [isStatsOpen, setIsStatsOpen] = useState<boolean>(false);
   const [isShareCopied, setIsShareCopied] = useState<boolean>(false);
-  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(true);
+  const [isVictoryModalOpen, setIsVictoryModalOpen] = useState<boolean>(false);
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState<boolean>(false);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
   const [contactInitialTab, setContactInitialTab] = useState<'suggest' | 'remove' | 'contact'>('suggest');

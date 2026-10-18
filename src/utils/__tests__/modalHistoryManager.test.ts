@@ -27,8 +27,13 @@ describe('modalHistoryManager', () => {
         listeners = listeners.filter((h) => h !== handler);
       }),
       history: {
-        pushState: pushStateSpy,
-        back: backSpy,
+        state: null as any,
+        pushState: pushStateSpy.mockImplementation((state: any) => {
+          (global as any).window.history.state = state;
+        }),
+        back: backSpy.mockImplementation(() => {
+          (global as any).window.history.state = null;
+        }),
       },
       location: {
         href: 'https://taprobrick.com.br/',
@@ -55,6 +60,20 @@ describe('modalHistoryManager', () => {
     );
   });
 
+  it('does NOT pushState or call history.back when opened with pushHistory=false (initial mount)', () => {
+    const onClose = vi.fn();
+
+    registerModalOpen('modal-initial', onClose, false);
+
+    expect(getModalStack()).toEqual(['modal-initial']);
+    expect(pushStateSpy).not.toHaveBeenCalled();
+
+    // User closes the modal via UI
+    registerModalClose('modal-initial');
+    expect(getModalStack()).toEqual([]);
+    expect(backSpy).not.toHaveBeenCalled();
+  });
+
   it('handles browser popstate event by closing top modal without extra history.back', () => {
     const onClose1 = vi.fn();
     const onClose2 = vi.fn();
@@ -79,10 +98,11 @@ describe('modalHistoryManager', () => {
     expect(backSpy).not.toHaveBeenCalled();
   });
 
-  it('calls history.back() when modal closes via UI (X button) to pop its history entry', () => {
+  it('calls history.back() when modal closes via UI (X button) if it pushed history and state matches', () => {
     backSpy.mockImplementation(() => {
       // Simulate history.back firing a popstate event in browser
       listeners.forEach((fn) => fn({ type: 'popstate' }));
+      (global as any).window.history.state = null;
     });
 
     const onClose = vi.fn();
@@ -96,5 +116,18 @@ describe('modalHistoryManager', () => {
     expect(backSpy).toHaveBeenCalledTimes(1);
     // Programmatic back shouldn't call onClose again
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call history.back() if history.state does NOT match the modal id', () => {
+    const onClose = vi.fn();
+    registerModalOpen('modal-mismatch', onClose);
+
+    // Simulate history state being different or cleared
+    (global as any).window.history.state = { tpbModal: 'other-modal' };
+
+    registerModalClose('modal-mismatch');
+
+    expect(getModalStack()).toEqual([]);
+    expect(backSpy).not.toHaveBeenCalled();
   });
 });
