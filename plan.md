@@ -258,5 +258,29 @@ Refine the UI per user instruction:
   - Run `npm test` and ensure all tests pass.
   - Run `npm run build` with zero TypeScript errors.
 
+---
 
+## Milestone 12: Fullscreen Photo Lightbox with Pinch-to-Zoom & Pan (Mobile UX)
+### Objective
+Enable mobile and desktop players to inspect vehicle photos in high resolution by opening a dedicated fullscreen Lightbox modal upon tapping the car image or an expand button. Support pinch-to-zoom (touch), double-tap zoom (2.5x), drag/pan to explore details (rust, wheels, badge, interior), and swipe between photos.
 
+### Tasks
+- [x] **Photo Lightbox Component (`src/components/PhotoLightboxModal.tsx`)**:
+  - Fullscreen dark overlay (`fixed inset-0 z-50 bg-black/95 backdrop-blur-md`).
+  - Gesture support:
+    - Double tap / Double click: toggle 1x and 2.5x zoom centered on touch position.
+    - Pinch-to-zoom (touch): smooth scaling between 1x and 4x.
+    - Drag / Pan when zoomed in (> 1x): move around the photo smoothly with boundary clamping.
+    - Horizontal swipe when not zoomed (scale === 1): navigate previous/next photos.
+  - Controls:
+    - Top bar: Photo counter (e.g. `1/7`), micro-hint ("Dê 2 toques ou pince para zoom"), and close button (`✕`).
+    - Bottom bar / Floating controls: Zoom In, Zoom Out, Reset, Prev, Next buttons for accessibility and desktop mouse users.
+    - Keyboard navigation: ESC to close, Left/Right arrow keys to navigate.
+- [x] **Integrate into `ClueViewer.tsx`**:
+  - Add tap-to-open interaction on the main photo (`cursor-zoom-in` styling and subtle hint badge "🔍 Toque para ampliar").
+  - Connect current photo index and list of unlocked photos to `PhotoLightboxModal`.
+  - Maintain active photo index synchronized between card gallery and lightbox.
+- [x] **Validation & Verification**:
+  - Verify on desktop and mobile viewports.
+  - Run `npm test` (39/39 passing) and `npm run build` (clean).
+  - Verify touch gestures (pinch, double-tap, pan, swipe).

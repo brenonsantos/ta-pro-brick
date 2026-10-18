@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ClueItem } from '../types/game';
-import { Camera, FileText, MapPin, Clock, Lock, Sparkles, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { Camera, FileText, MapPin, Clock, Lock, Sparkles, ChevronLeft, ChevronRight, ExternalLink, Maximize2 } from 'lucide-react';
+import { PhotoLightboxModal } from './PhotoLightboxModal';
 
 interface ClueViewerProps {
   clues: ClueItem[];
@@ -23,6 +24,7 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
 }) => {
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [hasSwitchedPhoto, setHasSwitchedPhoto] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const isLatestClue = (clueNumber: number) => {
     return unlockedClueGlow && !isCompleted && unlockedCount === clueNumber;
@@ -122,7 +124,11 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden touch-pan-y select-none"
+          onClick={() => allPhotos.length > 0 && setIsLightboxOpen(true)}
+          className={`relative aspect-[4/3] sm:aspect-[16/10] w-full bg-zinc-950 flex items-center justify-center overflow-hidden touch-pan-y select-none ${
+            allPhotos.length > 0 ? 'cursor-zoom-in group' : ''
+          }`}
+          title={allPhotos.length > 0 ? 'Toque ou clique para ver foto em tela cheia com zoom' : undefined}
         >
           {allPhotos.length > 0 ? (
             <>
@@ -137,13 +143,30 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
               <img
                 src={allPhotos[currentPhotoIndex] || allPhotos[0]}
                 alt="Foto do anúncio"
-                className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none pointer-events-none"
+                className="relative z-10 max-h-full max-w-full object-contain transition-all duration-300 select-none pointer-events-none group-hover:scale-[1.015]"
               />
             </>
           ) : (
             <div className="flex h-full w-full items-center justify-center text-zinc-600">
               <Camera className="h-12 w-12" />
             </div>
+          )}
+
+          {/* Expand / Fullscreen Badge Button */}
+          {allPhotos.length > 0 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(true);
+              }}
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 flex items-center gap-1.5 rounded-full bg-black/70 hover:bg-black/90 active:scale-95 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-bold text-white backdrop-blur-md border border-white/15 transition cursor-pointer shadow-lg"
+              aria-label="Abrir foto em tela cheia com zoom"
+              title="Abrir em tela cheia com zoom"
+            >
+              <Maximize2 className="h-3.5 w-3.5 text-amber-400" />
+              <span className="hidden sm:inline">Ampliar</span>
+            </button>
           )}
 
           {/* Photo Counter & Badge */}
@@ -171,7 +194,10 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => handleSelectPhoto(idx)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectPhoto(idx);
+                  }}
                   aria-label={`Ir para foto ${idx + 1}`}
                   className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer ${
                     idx === currentPhotoIndex
@@ -187,14 +213,22 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           {allPhotos.length > 1 && (
             <>
               <button
-                onClick={handlePrevPhoto}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrevPhoto();
+                }}
                 className="hidden sm:flex absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Foto anterior"
               >
                 <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
               </button>
               <button
-                onClick={handleNextPhoto}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNextPhoto();
+                }}
                 className="hidden sm:flex absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 z-20 rounded-full bg-black/60 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-black/90 active:scale-95 transition cursor-pointer"
                 aria-label="Próxima foto"
               >
@@ -499,6 +533,18 @@ export const ClueViewer: React.FC<ClueViewerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Fullscreen Photo Lightbox Modal */}
+      <PhotoLightboxModal
+        isOpen={isLightboxOpen}
+        photos={allPhotos}
+        currentIndex={currentPhotoIndex}
+        onClose={() => setIsLightboxOpen(false)}
+        onIndexChange={(idx) => {
+          setHasSwitchedPhoto(true);
+          setActivePhotoIndex(idx);
+        }}
+      />
     </div>
   );
 };
