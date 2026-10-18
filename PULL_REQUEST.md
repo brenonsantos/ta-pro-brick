@@ -1,28 +1,39 @@
-# Pull Request: Milestone 2 — Multi-Car Prototype & Gameplay Validation
+# Pull Request: Fullscreen Photo Lightbox with Pinch-to-Zoom & Pan (Mobile UX)
 
 ## Summary of Changes
-Expands the playable prototype from a single vehicle into a multi-car testing suite with 5 distinct vehicles, validating game balance, tolerances, and scoring across widely differing market price tiers:
+Implements an interactive fullscreen photo lightbox to solve photo visibility and zoom difficulties reported by mobile users:
 
-- **5 Diverse Vehicle Challenges (`src/data/mockChallenges.json`):**
-  1. **VW Gol GTS 1.8 1993 (R$ 48.900):** Iconic 90s hot hatch.
-  2. **Fiat Uno Mille Fire 2002 (R$ 13.500):** Budget daily driver (validates the R$ 1,000 floor tolerance).
-  3. **BMW 320i M Sport 2021 (R$ 219.000):** Modern premium sedan (validates 5% = ~R$ 11,000 absolute margin).
-  4. **Chevrolet Opala Comodoro 4.1 1988 (R$ 78.000):** Classic Brazilian 6-cylinder collector car.
-  5. **VW Fusca Itamar 1994 (R$ 95.000):** Overpriced collector novelty ("relíquia de garagem") to test market humor.
-- **Vehicle Selector Navigation (`src/components/VehicleSelector.tsx`):**
-  - Horizontal quick-switcher bar showing car names and completion checkmarks.
-  - Independent round state preservation across switching between cars.
-- **Round Advancement Flow (`src/components/VictoryModal.tsx`):**
-  - Added "Jogar Próximo Carro de Teste 🚗" button upon round completion to cycle through the challenges.
-- **Deployment Configuration (`vercel.json`):**
-  - Added static routing and SPA rewrite configuration for instant one-click hosting on Vercel or similar platforms.
+- **Fullscreen Photo Lightbox Component (`src/components/PhotoLightboxModal.tsx`):**
+  - Dark, focused fullscreen backdrop (`bg-black/95 backdrop-blur-xl`) giving 100% viewport space to photos.
+  - **Multi-Touch Gestures (Mobile):**
+    - Pinch-to-zoom: smooth scaling from 1x to 4x.
+    - Double-tap: toggles between 1x and 2.5x zoom, centered near the tapped position.
+    - Pan / Drag: smoothly move around zoomed-in photos to inspect wheels, rust, dashboard details, and condition.
+    - Swipe navigation: swipe left/right when at 1x scale to advance between car photos.
+  - **Desktop Controls & Accessibility:**
+    - Floating control bar with Zoom In (`+`), Zoom Out (`-`), and Reset (`1x`) buttons.
+    - Left/Right chevron navigation buttons.
+    - Keyboard shortcuts: `Escape` to close, `ArrowLeft` / `ArrowRight` to change photos, double click to zoom.
+    - Prevents background body scroll while open.
+- **Card Integration (`src/components/ClueViewer.tsx`):**
+  - Tapping or clicking the vehicle photo directly opens the Lightbox.
+  - Added dedicated "Ampliar" (`Maximize2`) badge button on the top-right corner of the photo.
+  - Cursor changes to `cursor-zoom-in` with subtle hover zoom effect on desktop.
+  - Keeps active photo index synchronized between card gallery and lightbox.
+- **Unit Tests (`src/components/__tests__/PhotoLightboxModal.test.tsx`):**
+  - 3 comprehensive tests verifying rendering, counter, controls, and close behaviors.
 
 ## Verification
-- Unit Tests: 12 passing in Vitest (`npm test`).
-- Production Build: Clean TypeScript compilation and Vite build with zero warnings (`npm run build`).
+- Unit Tests: 39 passing in Vitest (`npm test`).
+- Production Build: Clean TypeScript compilation and Vite build with 0 errors (`npm run build`).
 
 ## Manual Testing Instructions
-1. Open http://localhost:5173/ in browser.
-2. Observe the top vehicle bar with all 5 cars.
-3. Switch between cars (e.g. from Gol GTS to Uno Mille) and verify clues, photos, and state adapt dynamically.
-4. Play through a car, finish the round, and use "Jogar Próximo Carro de Teste" to verify sequential progression.
+1. Open http://localhost:5173/ (or inspect with Chrome DevTools Device Mode set to iPhone/Pixel).
+2. Tap the vehicle image (or click the "Ampliar" button in the top right of the photo).
+3. Verify the fullscreen lightbox opens.
+4. Try:
+   - Double tapping / double clicking on a detail (wheels, badge) to zoom 2.5x.
+   - Dragging the image while zoomed in.
+   - Using the Zoom In / Zoom Out / 1x buttons at the bottom.
+   - Swiping left/right when at 1x to view other photos.
+   - Closing via the `✕` button or `Escape` key.
