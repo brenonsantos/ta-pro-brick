@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, BarChart2, Flame, Trophy } from 'lucide-react';
 import { PlayerStats } from '../utils/statsManager';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export const StatsModal: React.FC<StatsModalProps> = ({
   stats,
   currentAttempt,
 }) => {
+  useBrowserBackClose(isOpen, onClose, 'stats-modal');
+
   if (!isOpen) return null;
 
   const winPercentage =

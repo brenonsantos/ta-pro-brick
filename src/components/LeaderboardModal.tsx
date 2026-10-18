@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, X, Edit2, Check, Flame, Shield, LogOut } from 'lucide-react';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 import {
   getDailyLeaderboard,
   getAllTimeLeaderboard,
@@ -29,6 +30,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   hasPlayedToday,
   dayNumber = 1,
 }) => {
+  useBrowserBackClose(isOpen, onClose, 'leaderboard-modal');
+
   const [activeTab, setActiveTab] = useState<'daily' | 'allTime'>('daily');
   const [profile, setProfile] = useState<PlayerProfile>(() => getOrCreatePlayerProfile());
   const [isEditingNick, setIsEditingNick] = useState(false);

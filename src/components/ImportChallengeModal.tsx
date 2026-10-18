@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, FileCode, Check, AlertCircle, Copy, Bookmark, Upload } from 'lucide-react';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
 import { FB_MARKETPLACE_BOOKMARKLET } from '../utils/bookmarklet';
 
@@ -23,6 +24,8 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
   onClose,
   onImport,
 }) => {
+  useBrowserBackClose(isOpen, onClose, 'import-challenge-modal');
+
   const [jsonText, setJsonText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedBookmarklet, setCopiedBookmarklet] = useState(false);

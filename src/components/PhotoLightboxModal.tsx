@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
 interface PhotoLightboxModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export const PhotoLightboxModal: React.FC<PhotoLightboxModalProps> = ({
   onClose,
   onIndexChange,
 }) => {
+  useBrowserBackClose(isOpen, onClose, 'photo-lightbox-modal');
+
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);

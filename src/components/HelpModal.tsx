@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Target, Lightbulb, Flame } from 'lucide-react';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -7,6 +8,8 @@ interface HelpModalProps {
 }
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+  useBrowserBackClose(isOpen, onClose, 'help-modal');
+
   if (!isOpen) return null;
 
   return (

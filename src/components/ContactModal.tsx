@@ -8,6 +8,7 @@ import {
   Cookie,
   ShieldCheck,
 } from 'lucide-react';
+import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 
 const InstagramIcon: React.FC<{ className?: string }> = ({ className = 'h-5 w-5' }) => (
   <svg
@@ -39,6 +40,8 @@ export const ContactModal: React.FC<ContactModalProps> = ({
   onClose,
   initialTab = 'suggest',
 }) => {
+  useBrowserBackClose(isOpen, onClose, 'contact-modal');
+
   const [activeTab, setActiveTab] = useState<'suggest' | 'remove' | 'contact'>(initialTab);
 
   useEffect(() => {
