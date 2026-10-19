@@ -374,3 +374,28 @@ Transform the post-game ranking widget on the home screen into a dual daily/week
   - Ran `npm test` (61 tests passing) and `npm run build` (clean).
   - Visual verification with mobile screenshots captured for both Daily and Weekly tabs.
 
+---
+
+## Milestone 17: Instant Challenge Loading & Elimination of Local Mock Flash
+### Objective
+Prevent the jarring flash where the local mock car (from `mockChallenges.json`) is rendered for a fraction of a second before being abruptly replaced by the live vehicle from Supabase.
+1. Implement persistent client-side caching of published challenges (`taprobrick_cached_challenges_v1`) so returning players immediately see the real database challenge with zero latency and zero layout shift.
+2. In `App.tsx`, initialize `challenges` synchronously from cache if present.
+3. For cold starts (first visit before cache exists) when Supabase is configured, display a sleek, subtle skeleton loader instead of rendering an unrelated mock car that suddenly disappears.
+4. If Supabase is unreachable or unconfigured, gracefully fall back to local mock challenges without delay.
+
+### Tasks
+- [x] **Challenge Caching in `src/services/challengeService.ts`**:
+  - Added `getCachedChallenges()` and `saveCachedChallenges()`.
+  - In `loadActiveChallenges()`, persisted Supabase results to localStorage.
+  - Added `getInitialChallenges()` helper to synchronously return cached challenges if available.
+- [x] **Skeleton / Smooth Loading in `src/App.tsx`**:
+  - Initialized `challenges` using `getInitialChallenges()`.
+  - Added `isLoadingChallenges` flag when Supabase is configured and no cache is present yet.
+  - Rendered a clean skeleton view for the car / clues rather than flashing a local mock car.
+- [x] **Unit Tests & Verification**:
+  - Added tests for `getCachedChallenges`, `saveCachedChallenges`, `getInitialChallenges`, and `loadActiveChallenges` in `challengeService.test.ts`.
+  - Verified all 65 unit tests pass (`npm test`) and build succeeds (`npm run build`).
+  - Verified elimination of local car flash on initial page load.
+
+

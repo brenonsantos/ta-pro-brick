@@ -2,7 +2,61 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { Challenge } from '../types/game';
 import mockChallengesData from '../data/mockChallenges.json';
 
-const defaultChallenges: Challenge[] = mockChallengesData as Challenge[];
+export const defaultChallenges: Challenge[] = mockChallengesData as Challenge[];
+export const CACHED_CHALLENGES_KEY = 'taprobrick_cached_challenges_v1';
+
+/**
+ * Retorna os desafios persistidos em cache no navegador, se houverem
+ */
+export function getCachedChallenges(): Challenge[] | null {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const raw = localStorage.getItem(CACHED_CHALLENGES_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Erro ao ler cache de desafios:', err);
+  }
+  return null;
+}
+
+/**
+ * Salva a lista de desafios no cache local para carregamento instantâneo
+ */
+export function saveCachedChallenges(challenges: Challenge[]): void {
+  try {
+    if (typeof localStorage !== 'undefined' && Array.isArray(challenges) && challenges.length > 0) {
+      localStorage.setItem(CACHED_CHALLENGES_KEY, JSON.stringify(challenges));
+    }
+  } catch (err) {
+    console.warn('Erro ao salvar cache de desafios:', err);
+  }
+}
+
+/**
+ * Retorna os desafios para inicialização síncrona do componente:
+ * 1. Se houver cache no localStorage, usa imediatamente (elimina piscada do carro local).
+ * 2. Se Supabase não estiver configurado (ex: offline ou dev local sem .env), usa defaultChallenges.
+ * 3. Se Supabase estiver configurado e o cache estiver vazio (primeiro acesso), retorna array vazio
+ *    para permitir que a interface exiba um skeleton suave enquanto busca os dados reais da nuvem.
+ */
+export function getInitialChallenges(): Challenge[] {
+  const cached = getCachedChallenges();
+  if (cached && cached.length > 0) {
+    return cached;
+  }
+
+  if (!isSupabaseConfigured()) {
+    return defaultChallenges;
+  }
+
+  return [];
+}
 
 /**
  * Converte um registro do banco de dados na estrutura Challenge utilizada pelo jogo
@@ -112,11 +166,17 @@ export async function loadActiveChallenges(): Promise<Challenge[]> {
 
       if (!error && data && data.length > 0) {
         const fromDb = data.map(mapRowToChallenge);
+        saveCachedChallenges(fromDb);
         return fromDb;
       }
     } catch (err) {
       console.warn('Erro ao carregar lista de desafios do Supabase:', err);
     }
+  }
+
+  const cached = getCachedChallenges();
+  if (cached && cached.length > 0) {
+    return cached;
   }
 
   return defaultChallenges;

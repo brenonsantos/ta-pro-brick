@@ -35,12 +35,12 @@ import {
 } from './utils/dailyChallenge';
 import { generateShareText, shareGameResult } from './utils/shareText';
 import confetti from 'canvas-confetti';
+import { Loader2 } from 'lucide-react';
 import { DailyCountdown } from './components/DailyCountdown';
 import { WeeklyLeaderboardWidget } from './components/WeeklyLeaderboardWidget';
-import { loadActiveChallenges } from './services/challengeService';
-import mockChallengesData from './data/mockChallenges.json';
+import { loadActiveChallenges, getInitialChallenges, defaultChallenges } from './services/challengeService';
+import { isSupabaseConfigured } from './services/supabase';
 
-const initialDefaultChallenges: Challenge[] = mockChallengesData as Challenge[];
 const ONBOARDING_STORAGE_KEY = 'taprobrick_has_seen_onboarding';
 
 // Feature flags
@@ -120,43 +120,54 @@ export function App() {
     }
   }, []);
 
-  const [challenges, setChallenges] = useState<Challenge[]>(initialDefaultChallenges);
+  const [challenges, setChallenges] = useState<Challenge[]>(() => getInitialChallenges());
+  const [isLoadingChallenges, setIsLoadingChallenges] = useState<boolean>(() => {
+    return isSupabaseConfigured() && getInitialChallenges().length === 0;
+  });
 
   useEffect(() => {
-    loadActiveChallenges().then((loaded) => {
-      if (loaded && loaded.length > 0) {
-        setChallenges(loaded);
-        setGameStates((prev) => {
-          const updated = { ...prev };
-          let changed = false;
-          loaded.forEach((c) => {
-            if (!updated[c.id]) {
-              updated[c.id] = createInitialGameState(c);
-              changed = true;
-            }
+    loadActiveChallenges()
+      .then((loaded) => {
+        if (loaded && loaded.length > 0) {
+          setChallenges(loaded);
+          setGameStates((prev) => {
+            const updated = { ...prev };
+            let changed = false;
+            loaded.forEach((c) => {
+              if (!updated[c.id]) {
+                updated[c.id] = createInitialGameState(c);
+                changed = true;
+              }
+            });
+            return changed ? updated : prev;
           });
-          return changed ? updated : prev;
-        });
-      }
-    });
+        }
+      })
+      .catch((err) => {
+        console.warn('Erro ao carregar desafios:', err);
+      })
+      .finally(() => {
+        setIsLoadingChallenges(false);
+      });
   }, []);
 
   const todayDateStr = getTodayDateString();
   const scheduledTodayChallenge = challenges.find((c) => c.publishDate === todayDateStr);
-  const dailyChallengeIndex = getDailyChallengeIndex(challenges.length, todayDateStr);
+  const dailyChallengeIndex = challenges.length > 0 ? getDailyChallengeIndex(challenges.length, todayDateStr) : 0;
   const dailyChallengeNumber = getDailyChallengeNumber(todayDateStr);
-  const dailyChallenge = scheduledTodayChallenge || challenges[dailyChallengeIndex] || challenges[0];
+  const dailyChallenge = scheduledTodayChallenge || challenges[dailyChallengeIndex] || challenges[0] || defaultChallenges[0];
 
   const activeChallenge =
     gameMode === 'daily'
       ? dailyChallenge
-      : challenges[trainingChallengeIndex] || challenges[0];
+      : challenges[trainingChallengeIndex] || challenges[0] || defaultChallenges[0];
 
   const [gameStates, setGameStates] = useState<Record<string, GameState>>(() => {
     const saved = loadSavedGameStates();
+    const effectiveChallenges = challenges.length > 0 ? challenges : defaultChallenges;
     if (saved && Object.keys(saved).length > 0) {
       const merged = { ...saved };
-      challenges.forEach((c) => {
+      effectiveChallenges.forEach((c) => {
         if (!merged[c.id]) {
           merged[c.id] = createInitialGameState(c);
         }
@@ -164,7 +175,7 @@ export function App() {
       return merged;
     }
     const initial: Record<string, GameState> = {};
-    challenges.forEach((c) => {
+    effectiveChallenges.forEach((c) => {
       initial[c.id] = createInitialGameState(c);
     });
     return initial;
@@ -469,8 +480,19 @@ export function App() {
       />
 
       <main className="flex-1 w-full max-w-xl md:max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-7 space-y-5 sm:space-y-6">
-        {/* In Training/Archive Mode: show training banner & vehicle switcher (desabilitado temporariamente) */}
-        {ENABLE_ARCHIVE_MODE && gameMode === 'training' && (
+        {isLoadingChallenges ? (
+          <div className="space-y-4 py-8 animate-pulse">
+            <div className="h-72 sm:h-96 w-full rounded-3xl bg-zinc-900/60 border border-zinc-800/60 flex flex-col items-center justify-center p-6 text-center space-y-3">
+              <div className="h-10 w-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+              <p className="text-xs font-bold text-zinc-400">Carregando anúncio de hoje...</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* In Training/Archive Mode: show training banner & vehicle switcher (desabilitado temporariamente) */}
+            {ENABLE_ARCHIVE_MODE && gameMode === 'training' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
               <span className="font-semibold">Arquivo: teste qualquer veículo livremente.</span>
@@ -567,6 +589,8 @@ export function App() {
         {/* Non-intrusive Ad Banner (Desabilitado temporariamente) */}
         {ENABLE_ADS && (
           <AdBannerSlot isCompleted={currentGameState.status === 'completed'} />
+        )}
+          </>
         )}
       </main>
 
