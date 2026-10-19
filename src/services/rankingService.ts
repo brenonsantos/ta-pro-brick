@@ -26,6 +26,39 @@ export interface AllTimeLeaderboardEntry {
 
 export type WeeklyLeaderboardEntry = AllTimeLeaderboardEntry;
 
+/**
+ * Calcula a porcentagem de jogadores que o usuário superou no desafio diário.
+ * Se o jogador estiver em 1º lugar, retorna 100%.
+ * Se for o único jogador, retorna 100%.
+ */
+export function calculatePlayerPercentile(playerRank: number, totalPlayers: number): number {
+  if (totalPlayers <= 1 || playerRank <= 1) {
+    return 100;
+  }
+  if (playerRank >= totalPlayers) {
+    return 0;
+  }
+  const playersBeaten = totalPlayers - playerRank;
+  return Math.round((playersBeaten / (totalPlayers - 1)) * 100);
+}
+
+/**
+ * Formata o texto exibido no ranking diário informando a porcentagem de jogadores superados.
+ */
+export function formatPlayerPercentileText(playerRank: number, totalPlayers: number): string {
+  if (totalPlayers <= 0) {
+    return 'Classificação dos pilotos no desafio de hoje';
+  }
+  const percentile = calculatePlayerPercentile(playerRank, totalPlayers);
+  if (percentile >= 100) {
+    return 'Melhor que 100% dos jogadores hoje! 🏆';
+  }
+  if (percentile > 0) {
+    return `Melhor que ${percentile}% dos jogadores hoje 🔥`;
+  }
+  return 'Você completou o desafio de hoje! 🏁';
+}
+
 export interface SubmitResultParams {
   challengeId: string;
   score: number;

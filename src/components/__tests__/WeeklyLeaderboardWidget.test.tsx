@@ -47,4 +47,17 @@ describe('WeeklyLeaderboardWidget Component', () => {
 
     expect(html).toContain('custom-widget-class');
   });
+
+  it('renderiza o subtítulo padrão para a aba diária quando ainda não há dados', () => {
+    const onOpen = vi.fn();
+    const html = renderToString(
+      React.createElement(WeeklyLeaderboardWidget, {
+        onOpenLeaderboard: onOpen,
+        dayNumber: 5,
+        initialTab: 'daily',
+      })
+    );
+
+    expect(html).toContain('Classificação dos pilotos no desafio de hoje');
+  });
 });

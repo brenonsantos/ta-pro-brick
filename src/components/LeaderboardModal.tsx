@@ -4,6 +4,7 @@ import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
 import {
   getDailyLeaderboard,
   getWeeklyLeaderboard,
+  formatPlayerPercentileText,
   LeaderboardEntry,
   WeeklyLeaderboardEntry,
 } from '../services/rankingService';
@@ -74,6 +75,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   }, [isOpen, challengeId]);
 
   if (!isOpen) return null;
+
+  const currentDailyPlayer = dailyEntries.find((e) => e.isCurrentPlayer || e.playerId === profile.id);
 
   const handleSaveNickname = async () => {
     if (!nicknameInput.trim()) return;
@@ -232,6 +235,19 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
             Semana
           </button>
         </div>
+
+        {/* Daily Performance Ribbon */}
+        {activeTab === 'daily' && hasPlayedToday && currentDailyPlayer && (
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300 shrink-0">
+            <div className="flex items-center gap-1.5 font-bold">
+              <Flame className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span>Desempenho no Desafio #{dayNumber}</span>
+            </div>
+            <span className="text-[11px] font-black text-amber-300">
+              {formatPlayerPercentileText(currentDailyPlayer.rank, dailyEntries.length)}
+            </span>
+          </div>
+        )}
 
         {/* Weekly Countdown Ribbon */}
         {activeTab === 'weekly' && (

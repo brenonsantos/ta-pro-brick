@@ -398,4 +398,31 @@ Prevent the jarring flash where the local mock car (from `mockChallenges.json`) 
   - Verified all 65 unit tests pass (`npm test`) and build succeeds (`npm run build`).
   - Verified elimination of local car flash on initial page load.
 
+---
+
+## Milestone 18: Daily Ranking Percentile ("Melhor que X% dos jogadores")
+### Objective
+Update the text showing today's ranking in `WeeklyLeaderboardWidget` (and `LeaderboardModal`) to show the user's percentile ("Melhor que X% dos jogadores hoje" / "Superou X% dos pilotos") instead of generic static copy.
+
+### Tasks
+- [x] **Percentile Calculation Logic**:
+  - Calculate `percentile` based on total players in today's challenge and the current player's rank:
+    - If `totalPlayers <= 1` and player is rank 1: "Melhor que 100% dos jogadores hoje! 🏆"
+    - If `totalPlayers > 1`: `percentile = Math.round(((totalPlayers - rank) / (totalPlayers - 1)) * 100)`
+    - Formats:
+      - 100%: "Melhor que 100% dos jogadores hoje! 🏆"
+      - > 0%: `Melhor que ${percentile}% dos jogadores hoje 🔥`
+      - 0% (last place): "Você completou o desafio de hoje! 🏁"
+- [x] **Update `WeeklyLeaderboardWidget.tsx`**:
+  - Replace the generic subtitle `"Classificação dos pilotos no desafio de hoje"` with the dynamic percentile text when the player has a ranking.
+  - In player row, display the percentile pill/badge (`"Melhor que X%"`).
+- [x] **Update `LeaderboardModal.tsx`**:
+  - In the Daily tab, display the dynamic percentile banner when the player has completed today's challenge.
+- [x] **Unit Tests & Verification**:
+  - Update `WeeklyLeaderboardWidget.test.tsx` and test percentile rendering scenarios (100%, 80%, etc.).
+  - Run `npm test` and `npm run build`.
+  - Visual verification via mobile browser screenshot.
+
+
+
 

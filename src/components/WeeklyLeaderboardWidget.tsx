@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Trophy, ArrowRight, Award, Users, Calendar, Clock } from 'lucide-react';
+import { Trophy, ArrowRight, Award, Users, Calendar, Clock, Flame } from 'lucide-react';
 import {
   getDailyLeaderboard,
   getWeeklyLeaderboard,
+  calculatePlayerPercentile,
+  formatPlayerPercentileText,
   LeaderboardEntry,
   WeeklyLeaderboardEntry,
 } from '../services/rankingService';
@@ -159,7 +161,14 @@ export const WeeklyLeaderboardWidget: React.FC<WeeklyLeaderboardWidgetProps> = (
             </h3>
             <p className="text-[11px] text-zinc-400 flex items-center gap-1">
               {activeTab === 'daily' ? (
-                'Classificação dos pilotos no desafio de hoje'
+                currentDailyPlayer ? (
+                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <Flame className="h-3 w-3 text-amber-400 shrink-0" />
+                    <span>{formatPlayerPercentileText(currentDailyPlayer.rank, dailyEntries.length)}</span>
+                  </span>
+                ) : (
+                  'Classificação dos pilotos no desafio de hoje'
+                )
               ) : (
                 <>
                   <Clock className="h-3 w-3 text-amber-400/80 shrink-0" />
@@ -231,6 +240,11 @@ export const WeeklyLeaderboardWidget: React.FC<WeeklyLeaderboardWidgetProps> = (
                           <Award className="h-3 w-3 text-emerald-400/80" />
                           {item.attemptsCount} {item.attemptsCount === 1 ? 'chute' : 'chutes'}
                           {item.completedAt && ` • ${item.completedAt}`}
+                          {isMe && currentDailyPlayer && (
+                            <span className="text-amber-400 font-bold ml-1">
+                              • Melhor que {calculatePlayerPercentile(currentDailyPlayer.rank, dailyEntries.length)}%
+                            </span>
+                          )}
                         </span>
                       </div>
                     </div>
@@ -267,6 +281,9 @@ export const WeeklyLeaderboardWidget: React.FC<WeeklyLeaderboardWidgetProps> = (
                           <Award className="h-3 w-3 text-emerald-400" />
                           {currentDailyPlayer.attemptsCount} {currentDailyPlayer.attemptsCount === 1 ? 'chute' : 'chutes'}
                           {currentDailyPlayer.completedAt && ` • ${currentDailyPlayer.completedAt}`}
+                          <span className="text-amber-400 font-bold ml-1">
+                            • Melhor que {calculatePlayerPercentile(currentDailyPlayer.rank, dailyEntries.length)}%
+                          </span>
                         </span>
                       </div>
                     </div>

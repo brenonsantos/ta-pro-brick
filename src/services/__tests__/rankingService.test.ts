@@ -4,6 +4,8 @@ import {
   getDailyLeaderboard,
   getAllTimeLeaderboard,
   getWeeklyLeaderboard,
+  calculatePlayerPercentile,
+  formatPlayerPercentileText,
 } from '../rankingService';
 import { updatePlayerNickname, getOrCreatePlayerProfile } from '../playerService';
 
@@ -121,5 +123,38 @@ describe('rankingService (Ranking por Pontos)', () => {
     expect(myWeekly?.totalScore).toBe(1600);
     expect(myWeekly?.gamesPlayed).toBe(2);
     expect(myWeekly?.gamesWon).toBe(2);
+  });
+
+  describe('calculatePlayerPercentile & formatPlayerPercentileText', () => {
+    it('calcula 100% para o 1º colocado ou jogador único', () => {
+      expect(calculatePlayerPercentile(1, 1)).toBe(100);
+      expect(calculatePlayerPercentile(1, 5)).toBe(100);
+      expect(calculatePlayerPercentile(1, 100)).toBe(100);
+      expect(formatPlayerPercentileText(1, 1)).toContain('Melhor que 100% dos jogadores hoje! 🏆');
+      expect(formatPlayerPercentileText(1, 10)).toContain('Melhor que 100% dos jogadores hoje! 🏆');
+    });
+
+    it('calcula percentis proporcionais para posições intermediárias', () => {
+      // 2º de 5 jogadores = superou 3 de 4 = 75%
+      expect(calculatePlayerPercentile(2, 5)).toBe(75);
+      expect(formatPlayerPercentileText(2, 5)).toBe('Melhor que 75% dos jogadores hoje 🔥');
+
+      // 3º de 5 jogadores = superou 2 de 4 = 50%
+      expect(calculatePlayerPercentile(3, 5)).toBe(50);
+      expect(formatPlayerPercentileText(3, 5)).toBe('Melhor que 50% dos jogadores hoje 🔥');
+
+      // 10º de 100 jogadores = superou 90 de 99 = 91%
+      expect(calculatePlayerPercentile(10, 100)).toBe(91);
+      expect(formatPlayerPercentileText(10, 100)).toBe('Melhor que 91% dos jogadores hoje 🔥');
+    });
+
+    it('retorna 0% e mensagem de conclusão para o último colocado com múltiplos jogadores', () => {
+      expect(calculatePlayerPercentile(5, 5)).toBe(0);
+      expect(formatPlayerPercentileText(5, 5)).toBe('Você completou o desafio de hoje! 🏁');
+    });
+
+    it('retorna texto padrão quando não há jogadores', () => {
+      expect(formatPlayerPercentileText(0, 0)).toBe('Classificação dos pilotos no desafio de hoje');
+    });
   });
 });
