@@ -15,6 +15,8 @@ import {
   X,
   Loader2,
   FileCode,
+  AlertTriangle,
+  CloudUpload,
 } from 'lucide-react';
 import {
   fetchAllChallenges,
@@ -22,7 +24,11 @@ import {
   deleteChallenge,
   AdminChallengeInput,
 } from '../services/adminService';
-import { uploadMultiplePhotos } from '../services/storageService';
+import {
+  uploadMultiplePhotos,
+  isExternalPhotoUrl,
+  transferExternalPhotosToStorage,
+} from '../services/storageService';
 import { isSupabaseConfigured } from '../services/supabase';
 import { ImportChallengeModal } from '../components/ImportChallengeModal';
 import { formatBRL } from '../utils/currency';
@@ -236,6 +242,55 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
   const handleRemovePhoto = (indexToRemove: number) => {
     const updated = parsedPhotoUrls.filter((_, idx) => idx !== indexToRemove);
     setPhotosText(updated.join('\n'));
+  };
+
+  const [isMigratingPhotos, setIsMigratingPhotos] = useState(false);
+  const [migrateProgress, setMigrateProgress] = useState('');
+
+  const handleMigrateExternalPhotos = async () => {
+    if (!isSupabaseConfigured()) {
+      setFormMessage({ type: 'error', text: 'Supabase não está configurado.' });
+      return;
+    }
+
+    const externalUrls = parsedPhotoUrls.filter(isExternalPhotoUrl);
+    if (externalUrls.length === 0) {
+      setFormMessage({ type: 'success', text: 'Todas as fotos já estão hospedadas com segurança!' });
+      return;
+    }
+
+    setIsMigratingPhotos(true);
+    setMigrateProgress(`0/${parsedPhotoUrls.length}`);
+
+    const prefix = (title || 'car')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]+/g, '-')
+      .slice(0, 30);
+
+    const result = await transferExternalPhotosToStorage(
+      parsedPhotoUrls,
+      prefix,
+      (done, total) => setMigrateProgress(`${done}/${total}`)
+    );
+
+    setPhotosText(result.updatedUrls.join('\n'));
+    setIsMigratingPhotos(false);
+
+    if (result.transferredCount > 0) {
+      setFormMessage({
+        type: 'success',
+        text: `${result.transferredCount} foto(s) migrada(s) para o Supabase Storage permanente com sucesso!`,
+      });
+    }
+
+    if (result.failedCount > 0) {
+      setFormMessage({
+        type: 'error',
+        text: `Atenção: ${result.failedCount} foto(s) não puderam ser baixadas (possível link expirado). Erros: ${result.errors.join('; ')}`,
+      });
+    }
   };
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -511,27 +566,76 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
                 required
               />
 
+              {/* Alerta e Botão de Migração de Fotos Externas */}
+              {parsedPhotoUrls.some(isExternalPhotoUrl) && (
+                <div className="mt-2 p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span className="text-xs text-amber-300">
+                      <strong>{parsedPhotoUrls.filter(isExternalPhotoUrl).length} foto(s) externa(s) detectada(s).</strong> Links do Facebook expiram com o tempo.
+                    </span>
+                  </div>
+                  {isSupabaseConfigured() ? (
+                    <button
+                      type="button"
+                      onClick={handleMigrateExternalPhotos}
+                      disabled={isMigratingPhotos}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-black text-black hover:bg-amber-400 transition cursor-pointer disabled:opacity-50 shrink-0 self-start sm:self-auto"
+                    >
+                      {isMigratingPhotos ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          <span>Migrando {migrateProgress}...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CloudUpload className="h-3.5 w-3.5" />
+                          <span>Migrar para Supabase</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <span className="text-[11px] text-amber-400/80 font-medium self-start sm:self-auto">
+                      (Supabase desconectado)
+                    </span>
+                  )}
+                </div>
+              )}
+
               {parsedPhotoUrls.length > 0 && (
                 <div className="mt-2.5 flex items-center gap-2.5 overflow-x-auto pb-1.5">
-                  {parsedPhotoUrls.map((url, i) => (
-                    <div
-                      key={i}
-                      className="group relative h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-zinc-700 bg-zinc-900"
-                    >
-                      <img src={url} alt={`Preview ${i}`} className="h-full w-full object-cover" />
-                      <span className="absolute bottom-0 left-0 right-0 bg-black/80 text-[9px] text-center font-bold text-amber-400 py-0.5">
-                        {i === 0 ? 'Capa' : `#${i + 1}`}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePhoto(i)}
-                        className="absolute top-1 right-1 h-4 w-4 rounded-full bg-black/80 text-zinc-400 hover:text-rose-400 flex items-center justify-center transition cursor-pointer"
-                        title="Remover foto"
+                  {parsedPhotoUrls.map((url, i) => {
+                    const isExternal = isExternalPhotoUrl(url);
+                    return (
+                      <div
+                        key={i}
+                        className="group relative h-16 w-16 shrink-0 rounded-xl overflow-hidden border border-zinc-700 bg-zinc-900"
                       >
-                        <X className="h-2.5 w-2.5 stroke-[3]" />
-                      </button>
-                    </div>
-                  ))}
+                        <img src={url} alt={`Preview ${i}`} className="h-full w-full object-cover" />
+                        <span
+                          className={`absolute top-1 left-1 px-1 py-0.5 rounded text-[8px] font-bold ${
+                            isExternal
+                              ? 'bg-amber-500/90 text-black'
+                              : 'bg-emerald-600/90 text-white'
+                          }`}
+                          title={isExternal ? 'Foto externa / Facebook CDN (temporária)' : 'Hospedada no Supabase Storage'}
+                        >
+                          {isExternal ? 'FB' : '✓'}
+                        </span>
+                        <span className="absolute bottom-0 left-0 right-0 bg-black/80 text-[9px] text-center font-bold text-amber-400 py-0.5">
+                          {i === 0 ? 'Capa' : `#${i + 1}`}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePhoto(i)}
+                          className="absolute top-1 right-1 h-4 w-4 rounded-full bg-black/80 text-zinc-400 hover:text-rose-400 flex items-center justify-center transition cursor-pointer"
+                          title="Remover foto"
+                        >
+                          <X className="h-2.5 w-2.5 stroke-[3]" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

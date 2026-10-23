@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, FileCode, Check, AlertCircle, Copy, Bookmark, Upload } from 'lucide-react';
+import { X, FileCode, Check, AlertCircle, Copy, Bookmark, Upload, CloudUpload, Loader2 } from 'lucide-react';
 import { useBrowserBackClose } from '../hooks/useBrowserBackClose';
-
 import { FB_MARKETPLACE_BOOKMARKLET } from '../utils/bookmarklet';
+import { isExternalPhotoUrl, transferExternalPhotosToStorage } from '../services/storageService';
+import { isSupabaseConfigured } from '../services/supabase';
 
 interface ImportChallengeModalProps {
   isOpen: boolean;
@@ -29,10 +30,50 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
   const [jsonText, setJsonText] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedBookmarklet, setCopiedBookmarklet] = useState(false);
+  const [autoUploadToStorage, setAutoUploadToStorage] = useState(isSupabaseConfigured());
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferStatus, setTransferStatus] = useState('');
 
   if (!isOpen) return null;
 
-  const handleApply = () => {
+  const processAndImport = async (parsed: any) => {
+    setErrorMessage('');
+    const photos: string[] = Array.isArray(parsed?.photos) ? parsed.photos : [];
+    const hasExternalPhotos = photos.some(isExternalPhotoUrl);
+
+    if (autoUploadToStorage && isSupabaseConfigured() && hasExternalPhotos) {
+      setIsTransferring(true);
+      setTransferStatus(`Iniciando envio de ${photos.length} foto(s) para o Supabase Storage...`);
+
+      const prefix = (parsed.title || 'car')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .slice(0, 30);
+
+      try {
+        const result = await transferExternalPhotosToStorage(
+          photos,
+          prefix,
+          (done, total) => {
+            setTransferStatus(`Salvando fotos no Supabase Storage... (${done}/${total})`);
+          }
+        );
+
+        parsed.photos = result.updatedUrls;
+      } catch (err: any) {
+        console.warn('Erro ao transferir fotos para o storage:', err);
+      } finally {
+        setIsTransferring(false);
+      }
+    }
+
+    onImport(parsed);
+    onClose();
+  };
+
+  const handleApply = async () => {
     setErrorMessage('');
     const trimmed = jsonText.trim();
     if (!trimmed) {
@@ -46,8 +87,7 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
         throw new Error('O conteúdo deve ser um objeto JSON válido.');
       }
 
-      onImport(parsed);
-      onClose();
+      await processAndImport(parsed);
     } catch (err: any) {
       setErrorMessage(`JSON inválido: ${err.message || 'Verifique o formato colado.'}`);
     }
@@ -59,7 +99,7 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const content = event.target?.result as string;
         if (!content) return;
@@ -68,14 +108,14 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
         if (typeof parsed !== 'object' || parsed === null) {
           throw new Error('Arquivo não contém um objeto JSON válido.');
         }
-        onImport(parsed);
-        onClose();
+        await processAndImport(parsed);
       } catch (err: any) {
         setErrorMessage(`Falha ao ler arquivo: ${err.message || 'JSON inválido'}`);
       }
     };
     reader.readAsText(file);
   };
+
 
   const handleCopyBookmarklet = async () => {
     try {
@@ -150,6 +190,41 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
                 <span>{errorMessage}</span>
               </p>
             )}
+
+            {/* Opção de Auto-Upload para Supabase Storage */}
+            {isSupabaseConfigured() ? (
+              <label className="mt-2.5 flex items-start gap-2.5 p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 cursor-pointer hover:border-zinc-700 transition select-none">
+                <input
+                  type="checkbox"
+                  checked={autoUploadToStorage}
+                  onChange={(e) => setAutoUploadToStorage(e.target.checked)}
+                  disabled={isTransferring}
+                  className="mt-0.5 h-4 w-4 rounded border-zinc-700 bg-zinc-800 text-amber-500 focus:ring-amber-500/20 cursor-pointer"
+                />
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-zinc-200 flex items-center gap-1.5">
+                    <CloudUpload className="h-3.5 w-3.5 text-amber-400" />
+                    Salvar fotos no Supabase Storage automaticamente (Recomendado)
+                  </span>
+                  <span className="text-[11px] text-zinc-400">
+                    Baixa as fotos do Facebook CDN e hospeda permanentemente no nosso banco para evitar links quebrados por expiração.
+                  </span>
+                </div>
+              </label>
+            ) : (
+              <div className="mt-2.5 p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center gap-2 text-[11px] text-zinc-400">
+                <CloudUpload className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                <span>Supabase Storage offline. Em produção, fotos externas serão migradas automaticamente.</span>
+              </div>
+            )}
+
+            {/* Progresso de Transferência */}
+            {isTransferring && (
+              <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-3 animate-pulse">
+                <Loader2 className="h-4 w-4 text-amber-400 animate-spin shrink-0" />
+                <span className="text-xs font-bold text-amber-300">{transferStatus}</span>
+              </div>
+            )}
           </div>
 
           {/* Bookmarklet & Helper Box */}
@@ -204,17 +279,28 @@ export const ImportChallengeModal: React.FC<ImportChallengeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+            disabled={isTransferring}
+            className="rounded-xl px-4 py-2 text-xs font-semibold text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Cancelar
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-black hover:bg-amber-400 transition cursor-pointer"
+            disabled={isTransferring}
+            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-black text-black hover:bg-amber-400 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Check className="h-3.5 w-3.5 stroke-[3]" />
-            <span>Preencher Formulário</span>
+            {isTransferring ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Enviando para o Storage...</span>
+              </>
+            ) : (
+              <>
+                <Check className="h-3.5 w-3.5 stroke-[3]" />
+                <span>Preencher Formulário</span>
+              </>
+            )}
           </button>
         </div>
       </div>

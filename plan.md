@@ -423,6 +423,36 @@ Update the text showing today's ranking in `WeeklyLeaderboardWidget` (and `Leade
   - Run `npm test` and `npm run build`.
   - Visual verification via mobile browser screenshot.
 
+---
+
+## Milestone 19: Automatic Transfer of Facebook Marketplace Photos to Supabase Storage
+### Objective
+Prevent broken images caused by Facebook CDN link expiration (`oe=` signed parameters) by automatically downloading photos extracted from Facebook Marketplace and re-hosting them permanently in Supabase Storage.
+1. Extend `storageService.ts` with `isExternalPhotoUrl`, `uploadPhotoFromUrl`, and `transferExternalPhotosToStorage`.
+2. Add automatic transfer option and progress indicators to `ImportChallengeModal.tsx` upon pasting extracted challenge JSON.
+3. In `AdminPage.tsx`, detect external expiring links, display status badges in the photo gallery, and offer a 1-click migration button to convert all external URLs to Supabase Storage URLs.
+4. Comprehensive unit tests and visual verification.
+
+### Tasks
+- [x] **Storage Service Expansion (`src/services/storageService.ts`)**:
+  - Implement `isExternalPhotoUrl(url: string): boolean`.
+  - Implement `uploadPhotoFromUrl(imageUrl: string, fileNamePrefix?: string): Promise<UploadPhotoResult>`.
+  - Implement `transferExternalPhotosToStorage(photoUrls: string[], titlePrefix?: string, onProgress?: ...): Promise<TransferPhotosResult>`.
+- [x] **Automatic Transfer on Import (`src/components/ImportChallengeModal.tsx`)**:
+  - Add auto-upload checkbox (checked by default if Supabase is configured).
+  - Show real-time transfer progress indicator (`Transferindo foto 2/5 para o Supabase...`).
+  - Pass permanent Supabase URLs to `onImport`.
+- [x] **Admin Panel Enhancements (`src/pages/AdminPage.tsx`)**:
+  - Display expiration warning banner when Facebook/external URLs are detected.
+  - Add 1-click button "☁️ Migrar fotos para o Supabase Storage".
+  - Add visual badges to thumbnails (Green "Supabase" vs Orange "Facebook/Externo").
+- [x] **Unit Tests & Verification**:
+  - Create `src/services/__tests__/storageService.test.ts`.
+  - Create `src/components/__tests__/ImportChallengeModal.test.tsx`.
+  - Run full test suite (`npm test`) and production build (`npm run build`).
+  - Capture UI screenshot and verify workflow.
+
+
 
 
 
