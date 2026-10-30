@@ -35,8 +35,9 @@ import {
 import { isSupabaseConfigured } from '../services/supabase';
 import {
   signInAdmin,
+  signInAdminWithGoogle,
   signOutAdmin,
-  getAdminSession,
+  validateAdminSession,
   subscribeToAuthChanges,
 } from '../services/authService';
 import { ImportChallengeModal } from '../components/ImportChallengeModal';
@@ -54,6 +55,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
   const [emailInput, setEmailInput] = useState('');
   const [passInput, setPassInput] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [isGoogleAuthenticating, setIsGoogleAuthenticating] = useState(false);
   const [authError, setAuthError] = useState('');
   const [currentAdminEmail, setCurrentAdminEmail] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -94,20 +96,27 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
-      getAdminSession().then((session) => {
+      validateAdminSession().then(({ session, error }) => {
         if (session?.user) {
           setIsAuthenticated(true);
           setCurrentAdminEmail(session.user.email || null);
+          setAuthError('');
+        } else if (error) {
+          setAuthError(error);
         }
       });
 
-      const { unsubscribe } = subscribeToAuthChanges((session) => {
+      const { unsubscribe } = subscribeToAuthChanges((session, error) => {
         if (session?.user) {
           setIsAuthenticated(true);
           setCurrentAdminEmail(session.user.email || null);
+          setAuthError('');
         } else {
           setIsAuthenticated(false);
           setCurrentAdminEmail(null);
+          if (error) {
+            setAuthError(error);
+          }
         }
       });
 
@@ -120,6 +129,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
       loadChallengesList();
     }
   }, [isAuthenticated]);
+
+  const handleGoogleLogin = async () => {
+    setAuthError('');
+    setIsGoogleAuthenticating(true);
+    const res = await signInAdminWithGoogle();
+    if (res.error) {
+      setAuthError(res.error);
+      setIsGoogleAuthenticating(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -374,57 +393,108 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
           </div>
 
           {isSupabaseConfigured() ? (
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
-                  <Mail className="h-3.5 w-3.5 text-amber-400" />
-                  <span>E-mail de Administrador</span>
-                </label>
-                <input
-                  type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="admin@taprobrick.com.br"
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
-                  autoFocus
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-amber-400" />
-                  <span>Senha</span>
-                </label>
-                <input
-                  type="password"
-                  value={passInput}
-                  onChange={(e) => setPassInput(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
-                  required
-                />
-                {authError && <p className="mt-1.5 text-xs text-rose-400 font-semibold">{authError}</p>}
-              </div>
-
+            <div className="space-y-4">
               <button
-                type="submit"
-                disabled={isAuthenticating}
-                className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-black text-black hover:bg-amber-400 transition cursor-pointer disabled:opacity-50"
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isGoogleAuthenticating || isAuthenticating}
+                className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-zinc-700 bg-zinc-950 py-2.5 px-4 text-sm font-bold text-white hover:bg-zinc-800 hover:border-zinc-600 transition cursor-pointer disabled:opacity-50 shadow-sm"
               >
-                {isAuthenticating ? (
+                {isGoogleAuthenticating ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Autenticando...</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-400" />
+                    <span>Conectando com o Google...</span>
                   </>
                 ) : (
                   <>
-                    <KeyRound className="h-4 w-4" />
-                    <span>Entrar com Supabase Auth</span>
+                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                    <span>Entrar com Google</span>
                   </>
                 )}
               </button>
-            </form>
+
+              <div className="relative flex items-center justify-center">
+                <div className="border-t border-zinc-800 w-full"></div>
+                <span className="bg-zinc-900 px-3 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider absolute">
+                  ou com e-mail
+                </span>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-3.5 pt-1">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-amber-400" />
+                    <span>E-mail de Administrador</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="admin@taprobrick.com.br"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
+                    <Lock className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Senha</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={passInput}
+                    onChange={(e) => setPassInput(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                    required
+                  />
+                </div>
+
+                {authError && (
+                  <div className="p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs text-rose-300 font-medium leading-relaxed flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-rose-400 shrink-0 mt-0.5" />
+                    <span>{authError}</span>
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isAuthenticating || isGoogleAuthenticating}
+                  className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-black text-black hover:bg-amber-400 transition cursor-pointer disabled:opacity-50"
+                >
+                  {isAuthenticating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Autenticando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="h-4 w-4" />
+                      <span>Entrar com E-mail</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
           ) : (
             <div>
               <div className="mb-3.5 p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-300">

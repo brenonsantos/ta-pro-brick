@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 let mockIsConfigured = true;
 const mockSignInWithPassword = vi.fn();
+const mockSignInWithOAuth = vi.fn();
 const mockSignOut = vi.fn();
 const mockGetSession = vi.fn();
 const mockOnAuthStateChange = vi.fn();
@@ -11,6 +12,7 @@ vi.mock('../supabase', () => ({
   supabase: {
     auth: {
       signInWithPassword: (...args: any[]) => mockSignInWithPassword(...args),
+      signInWithOAuth: (...args: any[]) => mockSignInWithOAuth(...args),
       signOut: (...args: any[]) => mockSignOut(...args),
       getSession: (...args: any[]) => mockGetSession(...args),
       onAuthStateChange: (...args: any[]) => mockOnAuthStateChange(...args),
@@ -20,8 +22,10 @@ vi.mock('../supabase', () => ({
 
 import {
   signInAdmin,
+  signInAdminWithGoogle,
   signOutAdmin,
   getAdminSession,
+  validateAdminSession,
   subscribeToAuthChanges,
   isUserAdmin,
 } from '../authService';
@@ -31,6 +35,7 @@ describe('authService', () => {
     vi.restoreAllMocks();
     mockIsConfigured = true;
     mockSignInWithPassword.mockReset();
+    mockSignInWithOAuth.mockReset();
     mockSignOut.mockReset();
     mockGetSession.mockReset();
     mockOnAuthStateChange.mockReset();
@@ -114,6 +119,38 @@ describe('authService', () => {
     });
   });
 
+  describe('signInAdminWithGoogle', () => {
+    it('retorna erro se Supabase não estiver configurado', async () => {
+      mockIsConfigured = false;
+      const res = await signInAdminWithGoogle();
+      expect(res.error).toContain('Supabase não está configurado');
+      expect(mockSignInWithOAuth).not.toHaveBeenCalled();
+    });
+
+    it('inicia signInWithOAuth com provedor google e redirectTo correto', async () => {
+      mockIsConfigured = true;
+      mockSignInWithOAuth.mockResolvedValue({ data: { url: 'https://accounts.google.com' }, error: null });
+
+      const res = await signInAdminWithGoogle('http://localhost:5173/admin');
+      expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: { redirectTo: 'http://localhost:5173/admin' },
+      });
+      expect(res.error).toBeUndefined();
+    });
+
+    it('retorna mensagem de erro traduzida se falhar', async () => {
+      mockIsConfigured = true;
+      mockSignInWithOAuth.mockResolvedValue({
+        data: null,
+        error: { message: 'Provider not enabled' },
+      });
+
+      const res = await signInAdminWithGoogle();
+      expect(res.error).toBe('Provider not enabled');
+    });
+  });
+
   describe('signOutAdmin', () => {
     it('chama signOut no Supabase com sucesso', async () => {
       mockIsConfigured = true;
@@ -166,6 +203,42 @@ describe('authService', () => {
 
       const session = await getAdminSession();
       expect(session).toBeNull();
+    });
+  });
+
+  describe('validateAdminSession', () => {
+    it('retorna session e sem erro para admin autenticado', async () => {
+      mockIsConfigured = true;
+      mockGetSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { email: 'admin@google.com', app_metadata: { is_admin: true } },
+          },
+        },
+        error: null,
+      });
+
+      const res = await validateAdminSession();
+      expect(res.session?.user?.email).toBe('admin@google.com');
+      expect(res.error).toBeUndefined();
+    });
+
+    it('faz signOut e retorna mensagem de erro explicativa para usuário não-admin', async () => {
+      mockIsConfigured = true;
+      mockGetSession.mockResolvedValue({
+        data: {
+          session: {
+            user: { email: 'visitante@google.com', app_metadata: {} },
+          },
+        },
+        error: null,
+      });
+
+      const res = await validateAdminSession();
+      expect(mockSignOut).toHaveBeenCalled();
+      expect(res.session).toBeNull();
+      expect(res.error).toContain('visitante@google.com');
+      expect(res.error).toContain('não possui permissão de administrador');
     });
   });
 

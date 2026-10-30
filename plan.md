@@ -507,6 +507,32 @@ Protect the application for real public production by securing the `/admin` port
   - Capture visual verification of authenticated login.
   - Create `docs/pr/PR_ADMIN_SECURITY_SUPABASE_AUTH_RLS.md`.
 
+---
+
+## Milestone 22: Google OAuth for Admin Portal
+### Objective
+Enable administrators to authenticate seamlessly using their Google / Gmail accounts via Supabase Auth OAuth, preserving strict `is_admin` validation and providing a polished "Entrar com Google" button alongside email/password.
+1. Add `signInAdminWithGoogle()` to `src/services/authService.ts`.
+2. Update session initialization and auth change handling to validate OAuth logins, signing out and showing a clear error if the Google user lacks `is_admin: true`.
+3. Add Google OAuth button and "ou continue com e-mail" divider to `AdminPage.tsx`.
+4. Add unit tests for Google OAuth sign-in and rejection flow.
+5. Verify build, tests, visual appearance, and generate PR doc.
+
+### Tasks
+- [x] **Auth Service Google Integration (`src/services/authService.ts`)**:
+  - Implement `signInAdminWithGoogle()`.
+  - Add session validation returning informative error when Google OAuth user lacks `is_admin`.
+- [x] **Admin UI (`src/pages/AdminPage.tsx`)**:
+  - Add styled "Entrar com Google" button with Google SVG logo.
+  - Handle OAuth loading and error display.
+- [x] **Unit Tests (`src/services/__tests__/authService.test.ts`)**:
+  - Test Google OAuth sign-in trigger.
+  - Test validation on OAuth session restoration (16 tests total).
+- [x] **Verification & PR**:
+  - Run `npm test` (105/105 passing) and `npm run build` (clean).
+  - Capture visual screenshot of the updated login screen (`admin_secure_login_mobile.png`).
+  - Create `docs/pr/PR_ADMIN_GOOGLE_OAUTH.md`.
+
 
 
 
