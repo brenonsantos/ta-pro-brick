@@ -8,6 +8,18 @@ export interface AuthResult {
 }
 
 /**
+ * Verifica se um usuário possui a flag de administrador (is_admin: true)
+ * Checa tanto em app_metadata (protegido por SQL/Auth) quanto em user_metadata.
+ */
+export function isUserAdmin(user: User | null | undefined): boolean {
+  if (!user) return false;
+  return Boolean(
+    user.app_metadata?.is_admin === true ||
+    user.user_metadata?.is_admin === true
+  );
+}
+
+/**
  * Traduz mensagens técnicas do Supabase Auth para português amigável
  */
 function translateAuthError(message: string): string {
@@ -25,7 +37,8 @@ function translateAuthError(message: string): string {
 }
 
 /**
- * Realiza login de administrador no Supabase Auth via e-mail e senha
+ * Realiza login de administrador no Supabase Auth via e-mail e senha.
+ * Exige estritamente que o usuário tenha a flag is_admin: true.
  */
 export async function signInAdmin(email: string, password: string): Promise<AuthResult> {
   if (!isSupabaseConfigured() || !supabase) {
@@ -40,6 +53,14 @@ export async function signInAdmin(email: string, password: string): Promise<Auth
 
     if (error) {
       return { error: translateAuthError(error.message) };
+    }
+
+    if (!isUserAdmin(data.user)) {
+      await supabase.auth.signOut();
+      return {
+        error:
+          'Acesso negado: Este e-mail não possui permissão de administrador. Adicione {"is_admin": true} no seu usuário no Supabase para acessar.',
+      };
     }
 
     return { session: data.session, user: data.user };
@@ -68,7 +89,8 @@ export async function signOutAdmin(): Promise<{ error?: string }> {
 }
 
 /**
- * Obtém a sessão ativa de autenticação atual do navegador
+ * Obtém a sessão ativa de autenticação atual do navegador,
+ * validando se o usuário possui a flag de administrador.
  */
 export async function getAdminSession(): Promise<Session | null> {
   if (!isSupabaseConfigured() || !supabase) {
@@ -77,7 +99,10 @@ export async function getAdminSession(): Promise<Session | null> {
 
   try {
     const { data } = await supabase.auth.getSession();
-    return data?.session || null;
+    if (data?.session?.user && isUserAdmin(data.session.user)) {
+      return data.session;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -92,7 +117,11 @@ export function subscribeToAuthChanges(callback: (session: Session | null) => vo
   }
 
   const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    callback(session);
+    if (session?.user && isUserAdmin(session.user)) {
+      callback(session);
+    } else {
+      callback(null);
+    }
   });
 
   return {

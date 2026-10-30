@@ -4,23 +4,41 @@
 -- Execute este script no SQL Editor do seu projeto Supabase:
 -- https://supabase.com/dashboard/project/_/sql/new
 --
--- O que este script faz:
--- 1. Garante que apenas administradores autenticados (via Supabase Auth)
---    possam criar, atualizar ou excluir desafios na tabela 'challenges'.
--- 2. Impede o vazamento de desafios futuros: jogadores não autenticados (anon)
---    só conseguem consultar desafios publicados até a data atual (CURRENT_DATE).
--- 3. Protege o bucket de Storage 'challenges': leitura pública das fotos para
---    o jogo funcionar, mas uploads e exclusões restritos a usuários logados.
+-- ==============================================================================
+-- COMO TRANSFORMAR SEU USUÁRIO EM ADMINISTRADOR:
+-- Substitua 'seu-email-aqui@exemplo.com' pelo e-mail do seu usuário e execute:
+--
+-- UPDATE auth.users 
+-- SET raw_app_meta_data = raw_app_meta_data || '{"is_admin": true}'::jsonb 
+-- WHERE email = 'seu-email-aqui@exemplo.com';
 -- ==============================================================================
 
 -- ------------------------------------------------------------------------------
--- 1. TABELA DE DESAFIOS (public.challenges)
+-- 1. FUNÇÃO DE VERIFICAÇÃO DE ADMINISTRADOR (public.is_admin)
+-- ------------------------------------------------------------------------------
+-- Esta função lê o token JWT gerado pelo Supabase Auth e verifica se a chave
+-- app_metadata (ou user_metadata) contém "is_admin": true.
+-- O app_metadata só pode ser alterado diretamente pelo SQL do Supabase.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+as $$
+  select coalesce(
+    (auth.jwt() -> 'app_metadata' ->> 'is_admin')::boolean,
+    (auth.jwt() -> 'user_metadata' ->> 'is_admin')::boolean,
+    false
+  );
+$$;
+
+-- ------------------------------------------------------------------------------
+-- 2. TABELA DE DESAFIOS (public.challenges)
 -- ------------------------------------------------------------------------------
 
--- Garante que RLS está habilitado
 alter table public.challenges enable row level security;
 
--- Remove quaisquer políticas permissivas legadas
+-- Remove políticas antigas
 drop policy if exists "Todos podem ver desafios" on public.challenges;
 drop policy if exists "Desafios publicados são visíveis até a data atual" on public.challenges;
 drop policy if exists "Desafios podem ser criados" on public.challenges;
@@ -32,51 +50,43 @@ drop policy if exists "Admins can insert challenges" on public.challenges;
 drop policy if exists "Admins can update challenges" on public.challenges;
 drop policy if exists "Admins can delete challenges" on public.challenges;
 
--- A) Leitura para Jogadores Públicos (Anônimos): apenas desafios publicados até a data atual
+-- A) Leitura: Jogadores públicos só leem desafios publicados até a data atual.
+-- Administradores (is_admin = true) têm acesso irrestrito para ver o calendário futuro.
 create policy "Public players can read current and past challenges"
   on public.challenges
   for select
-  to anon
   using (
-    is_published = true
-    and publish_date <= current_date
+    (is_published = true and publish_date <= current_date)
+    or public.is_admin()
   );
 
--- B) Leitura para Administradores Autenticados: acesso irrestrito (inclusive futuros)
-create policy "Admins can read all challenges"
-  on public.challenges
-  for select
-  to authenticated
-  using (true);
-
--- C) Criação de novos desafios: restrito a usuários autenticados
+-- B) Criação de novos desafios: restrito exclusivamente a administradores
 create policy "Admins can insert challenges"
   on public.challenges
   for insert
   to authenticated
-  with check (auth.role() = 'authenticated');
+  with check (public.is_admin());
 
--- D) Edição de desafios existentes: restrito a usuários autenticados
+-- C) Edição de desafios existentes: restrito exclusivamente a administradores
 create policy "Admins can update challenges"
   on public.challenges
   for update
   to authenticated
-  using (auth.role() = 'authenticated')
-  with check (auth.role() = 'authenticated');
+  using (public.is_admin())
+  with check (public.is_admin());
 
--- E) Exclusão de desafios: restrito a usuários autenticados
+-- D) Exclusão de desafios: restrito exclusivamente a administradores
 create policy "Admins can delete challenges"
   on public.challenges
   for delete
   to authenticated
-  using (auth.role() = 'authenticated');
+  using (public.is_admin());
 
 
 -- ------------------------------------------------------------------------------
--- 2. SUPABASE STORAGE (storage.objects para o bucket 'challenges')
+-- 3. SUPABASE STORAGE (storage.objects para o bucket 'challenges')
 -- ------------------------------------------------------------------------------
 
--- Remove políticas antigas de storage
 drop policy if exists "Imagens de desafios são públicas para leitura" on storage.objects;
 drop policy if exists "Upload de imagens para desafios" on storage.objects;
 drop policy if exists "Atualização de imagens de desafios" on storage.objects;
@@ -86,38 +96,38 @@ drop policy if exists "Challenges storage upload authenticated only" on storage.
 drop policy if exists "Challenges storage update authenticated only" on storage.objects;
 drop policy if exists "Challenges storage delete authenticated only" on storage.objects;
 
--- Leitura pública das fotos dos carros
+-- Leitura pública das fotos dos carros para o jogo carregar normalmente
 create policy "Challenges storage is public for read"
   on storage.objects
   for select
   using (bucket_id = 'challenges');
 
--- Upload permitido apenas para administradores logados
+-- Upload permitido apenas para administradores confirmados
 create policy "Challenges storage upload authenticated only"
   on storage.objects
   for insert
   to authenticated
   with check (
     bucket_id = 'challenges'
-    and auth.role() = 'authenticated'
+    and public.is_admin()
   );
 
--- Atualização permitida apenas para administradores logados
+-- Atualização permitida apenas para administradores confirmados
 create policy "Challenges storage update authenticated only"
   on storage.objects
   for update
   to authenticated
   using (
     bucket_id = 'challenges'
-    and auth.role() = 'authenticated'
+    and public.is_admin()
   );
 
--- Exclusão permitida apenas para administradores logados
+-- Exclusão permitida apenas para administradores confirmados
 create policy "Challenges storage delete authenticated only"
   on storage.objects
   for delete
   to authenticated
   using (
     bucket_id = 'challenges'
-    and auth.role() = 'authenticated'
+    and public.is_admin()
   );

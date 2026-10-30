@@ -23,6 +23,7 @@ import {
   signOutAdmin,
   getAdminSession,
   subscribeToAuthChanges,
+  isUserAdmin,
 } from '../authService';
 
 describe('authService', () => {
@@ -35,6 +36,20 @@ describe('authService', () => {
     mockOnAuthStateChange.mockReset();
   });
 
+  describe('isUserAdmin', () => {
+    it('retorna true quando app_metadata ou user_metadata contiver is_admin: true', () => {
+      expect(isUserAdmin({ app_metadata: { is_admin: true } } as any)).toBe(true);
+      expect(isUserAdmin({ app_metadata: {}, user_metadata: { is_admin: true } } as any)).toBe(true);
+    });
+
+    it('retorna false quando is_admin não estiver presente ou for falso', () => {
+      expect(isUserAdmin({ app_metadata: { is_admin: false } } as any)).toBe(false);
+      expect(isUserAdmin({ app_metadata: {} } as any)).toBe(false);
+      expect(isUserAdmin(null)).toBe(false);
+      expect(isUserAdmin(undefined)).toBe(false);
+    });
+  });
+
   describe('signInAdmin', () => {
     it('retorna erro se o Supabase não estiver configurado', async () => {
       mockIsConfigured = false;
@@ -43,12 +58,16 @@ describe('authService', () => {
       expect(res.session).toBeUndefined();
     });
 
-    it('retorna sessão e usuário com sucesso em credenciais válidas', async () => {
+    it('retorna sessão e usuário com sucesso para usuário com is_admin: true', async () => {
       mockIsConfigured = true;
       mockSignInWithPassword.mockResolvedValue({
         data: {
           session: { access_token: 'fake-jwt-token' },
-          user: { id: 'admin-uuid', email: 'admin@taprobrick.com.br' },
+          user: {
+            id: 'admin-uuid',
+            email: 'admin@taprobrick.com.br',
+            app_metadata: { is_admin: true },
+          },
         },
         error: null,
       });
@@ -61,6 +80,26 @@ describe('authService', () => {
       expect(res.session?.access_token).toBe('fake-jwt-token');
       expect(res.user?.email).toBe('admin@taprobrick.com.br');
       expect(res.error).toBeUndefined();
+    });
+
+    it('rejeita login e faz signOut se o usuário autenticado não tiver is_admin: true', async () => {
+      mockIsConfigured = true;
+      mockSignInWithPassword.mockResolvedValue({
+        data: {
+          session: { access_token: 'regular-user-token' },
+          user: {
+            id: 'user-uuid',
+            email: 'jogador@exemplo.com',
+            app_metadata: { is_admin: false },
+          },
+        },
+        error: null,
+      });
+
+      const res = await signInAdmin('jogador@exemplo.com', 'senha123');
+      expect(mockSignOut).toHaveBeenCalled();
+      expect(res.error).toContain('não possui permissão de administrador');
+      expect(res.session).toBeUndefined();
     });
 
     it('traduz erros de credenciais inválidas para mensagem amigável em português', async () => {
@@ -93,15 +132,40 @@ describe('authService', () => {
       expect(session).toBeNull();
     });
 
-    it('retorna a sessão ativa quando existente', async () => {
+    it('retorna a sessão ativa apenas se o usuário for admin', async () => {
       mockIsConfigured = true;
       mockGetSession.mockResolvedValue({
-        data: { session: { user: { email: 'admin@taprobrick.com.br' } } },
+        data: {
+          session: {
+            user: {
+              email: 'admin@taprobrick.com.br',
+              app_metadata: { is_admin: true },
+            },
+          },
+        },
         error: null,
       });
 
       const session = await getAdminSession();
       expect(session?.user?.email).toBe('admin@taprobrick.com.br');
+    });
+
+    it('retorna null se o usuário da sessão não tiver is_admin: true', async () => {
+      mockIsConfigured = true;
+      mockGetSession.mockResolvedValue({
+        data: {
+          session: {
+            user: {
+              email: 'jogador@taprobrick.com.br',
+              app_metadata: {},
+            },
+          },
+        },
+        error: null,
+      });
+
+      const session = await getAdminSession();
+      expect(session).toBeNull();
     });
   });
 

@@ -488,20 +488,22 @@ Protect the application for real public production by securing the `/admin` port
 
 ### Tasks
 - [x] **Auth Service (`src/services/authService.ts`)**:
-  - Implement `signInAdmin`, `signOutAdmin`, `getAdminSession`, `subscribeToAuthChanges`.
-  - Add unit tests in `src/services/__tests__/authService.test.ts` (7 tests).
+  - Implement `signInAdmin`, `signOutAdmin`, `getAdminSession`, `subscribeToAuthChanges`, `isUserAdmin`.
+  - Add unit tests in `src/services/__tests__/authService.test.ts` (11 tests) including tests for `is_admin` validation and non-admin sign-out.
 - [x] **Admin Portal Security (`src/pages/AdminPage.tsx`)**:
   - Implement email/password form powered by Supabase Auth with persistent session restore.
   - Maintain offline developer fallback when Supabase is not configured.
 - [x] **Production SQL RLS Migration (`supabase/secure_production_rls.sql`)**:
-  - Restrict `INSERT`, `UPDATE`, `DELETE` on `challenges` to `authenticated` users only.
-  - Restrict `SELECT` on `challenges` for `anon` to published challenges on or before current date.
-  - Restrict storage modifications in bucket `challenges` to `authenticated` users only.
+  - Add `public.is_admin()` function checking `app_metadata` / `user_metadata` for `is_admin: true`.
+  - Restrict `INSERT`, `UPDATE`, `DELETE` on `challenges` to `public.is_admin()` only.
+  - Restrict `SELECT` on `challenges` for `anon` to published challenges on or before current date; admins see all.
+  - Restrict storage modifications in bucket `challenges` to `public.is_admin()` only.
+  - Provide SQL snippet to promote existing users: `UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || '{"is_admin": true}'::jsonb WHERE email = '...';`.
 - [x] **SEO & Crawler Protection**:
   - Create `public/robots.txt` (disallow `/admin`).
   - Create `public/sitemap.xml`.
 - [x] **Verification & PR**:
-  - Run full test suite (`npm test`, 96/96 passing) and build (`npm run build`).
+  - Run full test suite (`npm test`, 100/100 passing) and build (`npm run build`).
   - Capture visual verification of authenticated login.
   - Create `docs/pr/PR_ADMIN_SECURITY_SUPABASE_AUTH_RLS.md`.
 
