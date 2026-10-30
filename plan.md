@@ -475,6 +475,37 @@ Automatically calculate and pre-fill the next available (unoccupied) date in the
   - Capture screenshot of Admin form with auto-filled date and collision indicator.
   - Create `docs/pr/PR_ADMIN_NEXT_FREE_PUBLISH_DATE.md`.
 
+---
+
+## Milestone 21: Admin Security (Supabase Auth, Strict RLS & Search Crawler Protection)
+### Objective
+Protect the application for real public production by securing the `/admin` portal with Supabase Auth (Email & Password), enforcing strict database and storage Row Level Security (RLS) rules (preventing tampering and hiding unreleased challenges from public queries), and blocking search crawlers via `robots.txt`.
+1. Implement `authService.ts` for real Supabase session management and authentication.
+2. Upgrade `AdminPage.tsx` to authenticate against Supabase Auth with smooth session persistence and offline fallback.
+3. Write `supabase/secure_production_rls.sql` with hardened RLS policies for `challenges` and storage bucket.
+4. Add `public/robots.txt` and `public/sitemap.xml`.
+5. Unit tests, production build, and PR documentation.
+
+### Tasks
+- [x] **Auth Service (`src/services/authService.ts`)**:
+  - Implement `signInAdmin`, `signOutAdmin`, `getAdminSession`, `subscribeToAuthChanges`.
+  - Add unit tests in `src/services/__tests__/authService.test.ts` (7 tests).
+- [x] **Admin Portal Security (`src/pages/AdminPage.tsx`)**:
+  - Implement email/password form powered by Supabase Auth with persistent session restore.
+  - Maintain offline developer fallback when Supabase is not configured.
+- [x] **Production SQL RLS Migration (`supabase/secure_production_rls.sql`)**:
+  - Restrict `INSERT`, `UPDATE`, `DELETE` on `challenges` to `authenticated` users only.
+  - Restrict `SELECT` on `challenges` for `anon` to published challenges on or before current date.
+  - Restrict storage modifications in bucket `challenges` to `authenticated` users only.
+- [x] **SEO & Crawler Protection**:
+  - Create `public/robots.txt` (disallow `/admin`).
+  - Create `public/sitemap.xml`.
+- [x] **Verification & PR**:
+  - Run full test suite (`npm test`, 96/96 passing) and build (`npm run build`).
+  - Capture visual verification of authenticated login.
+  - Create `docs/pr/PR_ADMIN_SECURITY_SUPABASE_AUTH_RLS.md`.
+
+
 
 
 

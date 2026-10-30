@@ -1,0 +1,7 @@
+# robots.txt para https://taprobrick.com.br
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /#admin
+
+Sitemap: https://taprobrick.com.br/sitemap.xml
