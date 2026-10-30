@@ -452,6 +452,30 @@ Prevent broken images caused by Facebook CDN link expiration (`oe=` signed param
   - Run full test suite (`npm test`) and production build (`npm run build`).
   - Capture UI screenshot and verify workflow.
 
+---
+
+## Milestone 20: Auto-Fill Next Available Publish Date in Admin Panel
+### Objective
+Automatically calculate and pre-fill the next available (unoccupied) date in the Admin challenge creation form, preventing date collisions and saving the curator from checking calendars manually.
+1. Implement pure helper `getNextAvailablePublishDate` in `src/utils/publishDate.ts`.
+2. Connect to `AdminPage.tsx` so the date field defaults to the earliest unoccupied date >= today.
+3. Add collision warning badge when a date is already occupied, plus a 1-click "⚡ Próxima livre" shortcut.
+4. Comprehensive unit tests and visual verification.
+
+### Tasks
+- [x] **Utility Implementation (`src/utils/publishDate.ts`)**:
+  - Implement `getNextAvailablePublishDate(challenges, baseDate?)`.
+  - Add comprehensive unit tests in `src/utils/__tests__/publishDate.test.ts` (7 tests).
+- [x] **Admin Page Integration (`src/pages/AdminPage.tsx`)**:
+  - Auto-set `publishDate` on initial load and form reset for new challenges.
+  - Display collision warning if selected date is already assigned.
+  - Add "⚡ Próxima livre" shortcut chip next to date label.
+- [x] **Verification & PR**:
+  - Run `npm test` (89/89 passing) and `npm run build` (clean).
+  - Capture screenshot of Admin form with auto-filled date and collision indicator.
+  - Create `docs/pr/PR_ADMIN_NEXT_FREE_PUBLISH_DATE.md`.
+
+
 
 
 

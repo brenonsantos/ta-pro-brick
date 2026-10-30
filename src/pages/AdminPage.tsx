@@ -17,6 +17,7 @@ import {
   FileCode,
   AlertTriangle,
   CloudUpload,
+  Sparkles,
 } from 'lucide-react';
 import {
   fetchAllChallenges,
@@ -32,6 +33,7 @@ import {
 import { isSupabaseConfigured } from '../services/supabase';
 import { ImportChallengeModal } from '../components/ImportChallengeModal';
 import { formatBRL } from '../utils/currency';
+import { getNextAvailablePublishDate } from '../utils/publishDate';
 
 interface AdminPageProps {
   onBackToGame: () => void;
@@ -74,6 +76,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
     const list = await fetchAllChallenges();
     setChallenges(list);
     setIsLoading(false);
+    if (!editingId) {
+      setPublishDate(getNextAvailablePublishDate(list));
+    }
   };
 
   useEffect(() => {
@@ -113,11 +118,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleResetForm = () => {
+  const handleResetForm = (challengeList?: AdminChallengeInput[]) => {
     setEditingId(null);
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setPublishDate(tomorrow.toISOString().split('T')[0]);
+    setPublishDate(getNextAvailablePublishDate(challengeList || challenges));
     setTitle('');
     setPriceInput('');
     setPhotosText('');
@@ -183,8 +186,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
         type: 'success',
         text: editingId ? 'Desafio atualizado com sucesso!' : 'Novo desafio agendado com sucesso!',
       });
-      handleResetForm();
-      await loadChallengesList();
+      const updatedList = await fetchAllChallenges();
+      setChallenges(updatedList);
+      handleResetForm(updatedList);
     } else {
       setFormMessage({ type: 'error', text: res.error || 'Erro ao salvar desafio.' });
     }
@@ -428,7 +432,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
               {editingId && (
                 <button
                   type="button"
-                  onClick={handleResetForm}
+                  onClick={() => handleResetForm()}
                   className="text-xs text-zinc-400 hover:text-white underline cursor-pointer"
                 >
                   Cancelar Edição
@@ -453,9 +457,30 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
           <form onSubmit={handleSave} className="mt-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-300 mb-1">
-                  Data de Publicação *
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-zinc-300">
+                    Data de Publicação *
+                  </label>
+                  {(() => {
+                    const nextFree = getNextAvailablePublishDate(challenges);
+                    if (nextFree && publishDate !== nextFree) {
+                      const [, m, d] = nextFree.split('-');
+                      const displayDate = d && m ? `${d}/${m}` : nextFree;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => setPublishDate(nextFree)}
+                          className="text-[11px] font-bold text-amber-400 hover:text-amber-300 transition flex items-center gap-1 cursor-pointer"
+                          title="Preencher com a próxima data livre de desafios"
+                        >
+                          <Sparkles className="h-3 w-3" />
+                          <span>Próxima livre ({displayDate})</span>
+                        </button>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
                 <input
                   type="date"
                   value={publishDate}
@@ -463,6 +488,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
                   className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white focus:border-amber-500 focus:outline-none"
                   required
                 />
+                {(() => {
+                  const conflict = challenges.find((c) => c.publishDate === publishDate && c.id !== editingId);
+                  if (conflict) {
+                    return (
+                      <p className="mt-1 flex items-center gap-1 text-[11px] text-amber-400 font-medium">
+                        <AlertTriangle className="h-3 w-3 shrink-0" />
+                        <span className="truncate">Já ocupada por "{conflict.title}"</span>
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               <div className="sm:col-span-2">
