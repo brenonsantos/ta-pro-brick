@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   CloudUpload,
   Sparkles,
+  Lock,
+  Mail,
 } from 'lucide-react';
 import {
   fetchAllChallenges,
@@ -31,6 +33,12 @@ import {
   transferExternalPhotosToStorage,
 } from '../services/storageService';
 import { isSupabaseConfigured } from '../services/supabase';
+import {
+  signInAdmin,
+  signOutAdmin,
+  getAdminSession,
+  subscribeToAuthChanges,
+} from '../services/authService';
 import { ImportChallengeModal } from '../components/ImportChallengeModal';
 import { formatBRL } from '../utils/currency';
 import { getNextAvailablePublishDate } from '../utils/publishDate';
@@ -43,11 +51,14 @@ const DEFAULT_PASS = (import.meta as any).env?.VITE_ADMIN_PASSWORD || 'adminbric
 const AUTH_SESSION_KEY = 'taprobrick_admin_auth';
 
 export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return sessionStorage.getItem(AUTH_SESSION_KEY) === 'true';
-  });
+  const [emailInput, setEmailInput] = useState('');
   const [passInput, setPassInput] = useState('');
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [currentAdminEmail, setCurrentAdminEmail] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return !isSupabaseConfigured() && sessionStorage.getItem(AUTH_SESSION_KEY) === 'true';
+  });
 
   const [challenges, setChallenges] = useState<AdminChallengeInput[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,24 +93,72 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
   };
 
   useEffect(() => {
+    if (isSupabaseConfigured()) {
+      getAdminSession().then((session) => {
+        if (session?.user) {
+          setIsAuthenticated(true);
+          setCurrentAdminEmail(session.user.email || null);
+        }
+      });
+
+      const { unsubscribe } = subscribeToAuthChanges((session) => {
+        if (session?.user) {
+          setIsAuthenticated(true);
+          setCurrentAdminEmail(session.user.email || null);
+        } else {
+          setIsAuthenticated(false);
+          setCurrentAdminEmail(null);
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated) {
       loadChallengesList();
     }
   }, [isAuthenticated]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passInput === DEFAULT_PASS) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
-      setAuthError('');
+    setAuthError('');
+
+    if (isSupabaseConfigured()) {
+      if (!emailInput.trim() || !passInput) {
+        setAuthError('Preencha seu e-mail e senha.');
+        return;
+      }
+
+      setIsAuthenticating(true);
+      const res = await signInAdmin(emailInput, passInput);
+      setIsAuthenticating(false);
+
+      if (res.error) {
+        setAuthError(res.error);
+      } else {
+        setIsAuthenticated(true);
+        setCurrentAdminEmail(res.user?.email || null);
+        setPassInput('');
+      }
     } else {
-      setAuthError('Senha incorreta.');
+      if (passInput === DEFAULT_PASS) {
+        setIsAuthenticated(true);
+        sessionStorage.setItem(AUTH_SESSION_KEY, 'true');
+        setAuthError('');
+      } else {
+        setAuthError('Senha incorreta.');
+      }
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSupabaseConfigured()) {
+      await signOutAdmin();
+    }
     setIsAuthenticated(false);
+    setCurrentAdminEmail(null);
     sessionStorage.removeItem(AUTH_SESSION_KEY);
   };
 
@@ -306,37 +365,96 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
         <div className="w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-md">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500 font-black text-black">
-              <KeyRound className="h-6 w-6" />
+              <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
               <h1 className="text-lg font-black text-white">Painel do Curador</h1>
-              <p className="text-xs text-zinc-400">Acesso administrativo Tá pro Brick</p>
+              <p className="text-xs text-zinc-400">Acesso seguro Tá pro Brick</p>
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
-                Senha de Acesso
-              </label>
-              <input
-                type="password"
-                value={passInput}
-                onChange={(e) => setPassInput(e.target.value)}
-                placeholder="Digite a senha..."
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
-                autoFocus
-              />
-              {authError && <p className="mt-1.5 text-xs text-rose-400 font-semibold">{authError}</p>}
-            </div>
+          {isSupabaseConfigured() ? (
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-amber-400" />
+                  <span>E-mail de Administrador</span>
+                </label>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="admin@taprobrick.com.br"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                  autoFocus
+                  required
+                />
+              </div>
 
-            <button
-              type="submit"
-              className="w-full rounded-xl bg-amber-500 py-2.5 text-sm font-black text-black hover:bg-amber-400 transition cursor-pointer"
-            >
-              Acessar Painel
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-semibold text-zinc-300 mb-1 flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Senha</span>
+                </label>
+                <input
+                  type="password"
+                  value={passInput}
+                  onChange={(e) => setPassInput(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                  required
+                />
+                {authError && <p className="mt-1.5 text-xs text-rose-400 font-semibold">{authError}</p>}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isAuthenticating}
+                className="w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-amber-500 py-2.5 text-sm font-black text-black hover:bg-amber-400 transition cursor-pointer disabled:opacity-50"
+              >
+                {isAuthenticating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Autenticando...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="h-4 w-4" />
+                    <span>Entrar com Supabase Auth</span>
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <div>
+              <div className="mb-3.5 p-2.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-300">
+                ℹ️ Supabase desconectado. Usando senha de desenvolvedor local.
+              </div>
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-300 mb-1.5">
+                    Senha de Acesso (Modo Offline)
+                  </label>
+                  <input
+                    type="password"
+                    value={passInput}
+                    onChange={(e) => setPassInput(e.target.value)}
+                    placeholder="Digite a senha..."
+                    className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 focus:border-amber-500 focus:outline-none"
+                    autoFocus
+                  />
+                  {authError && <p className="mt-1.5 text-xs text-rose-400 font-semibold">{authError}</p>}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full rounded-xl bg-amber-500 py-2.5 text-sm font-black text-black hover:bg-amber-400 transition cursor-pointer"
+                >
+                  Acessar Painel
+                </button>
+              </form>
+            </div>
+          )}
 
           <button
             type="button"
@@ -372,6 +490,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToGame }) => {
         </div>
 
         <div className="flex items-center gap-3">
+          {currentAdminEmail && (
+            <div className="hidden md:flex items-center gap-1.5 text-xs text-zinc-400 bg-zinc-900/60 border border-zinc-800 px-2.5 py-1 rounded-full">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="truncate max-w-[180px]">{currentAdminEmail}</span>
+            </div>
+          )}
           <div className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs font-semibold">
             <Database className="h-3.5 w-3.5 text-amber-400" />
             <span className="text-[11px] text-zinc-300">
