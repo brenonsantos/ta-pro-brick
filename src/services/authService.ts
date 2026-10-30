@@ -89,36 +89,103 @@ export async function signOutAdmin(): Promise<{ error?: string }> {
 }
 
 /**
- * Obtém a sessão ativa de autenticação atual do navegador,
- * validando se o usuário possui a flag de administrador.
+ * Inicia o fluxo de autenticação OAuth com o Google para o administrador.
+ * Redireciona o navegador para o login da conta Google e retorna para /admin.
  */
-export async function getAdminSession(): Promise<Session | null> {
+export async function signInAdminWithGoogle(redirectTo?: string): Promise<{ error?: string }> {
   if (!isSupabaseConfigured() || !supabase) {
-    return null;
+    return { error: 'Supabase não está configurado neste ambiente.' };
+  }
+
+  try {
+    const defaultRedirect =
+      typeof window !== 'undefined' ? `${window.location.origin}/admin` : undefined;
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: redirectTo || defaultRedirect,
+      },
+    });
+
+    if (error) {
+      return { error: translateAuthError(error.message) };
+    }
+
+    return {};
+  } catch (err: any) {
+    return { error: err.message || 'Erro ao iniciar autenticação com Google.' };
+  }
+}
+
+export interface AdminSessionResult {
+  session: Session | null;
+  error?: string;
+}
+
+/**
+ * Valida a sessão ativa atual no Supabase.
+ * Se houver um usuário logado sem privilégios de admin, encerra a sessão
+ * e retorna uma mensagem de erro explicativa.
+ */
+export async function validateAdminSession(): Promise<AdminSessionResult> {
+  if (!isSupabaseConfigured() || !supabase) {
+    return { session: null };
   }
 
   try {
     const { data } = await supabase.auth.getSession();
-    if (data?.session?.user && isUserAdmin(data.session.user)) {
-      return data.session;
+    const user = data?.session?.user;
+
+    if (!user) {
+      return { session: null };
     }
-    return null;
+
+    if (!isUserAdmin(user)) {
+      await supabase.auth.signOut();
+      return {
+        session: null,
+        error: `Acesso negado: O e-mail (${user.email || 'usuário'}) não possui permissão de administrador. Adicione {"is_admin": true} no seu usuário no Supabase para acessar.`,
+      };
+    }
+
+    return { session: data.session };
   } catch {
-    return null;
+    return { session: null };
   }
 }
 
 /**
- * Escuta mudanças de estado da sessão (login, logout, renovação de token)
+ * Obtém a sessão ativa de autenticação atual do navegador,
+ * validando se o usuário possui a flag de administrador.
  */
-export function subscribeToAuthChanges(callback: (session: Session | null) => void): { unsubscribe: () => void } {
-  if (!isSupabaseConfigured() || !supabase) {
+export async function getAdminSession(): Promise<Session | null> {
+  const result = await validateAdminSession();
+  return result.session;
+}
+
+/**
+ * Escuta mudanças de estado da sessão (login, logout, retorno de OAuth, renovação de token)
+ */
+export function subscribeToAuthChanges(
+  callback: (session: Session | null, error?: string) => void
+): { unsubscribe: () => void } {
+  const client = supabase;
+  if (!isSupabaseConfigured() || !client) {
     return { unsubscribe: () => {} };
   }
 
-  const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-    if (session?.user && isUserAdmin(session.user)) {
-      callback(session);
+  const { data } = client.auth.onAuthStateChange(async (_event, session) => {
+    if (session?.user) {
+      if (isUserAdmin(session.user)) {
+        callback(session);
+      } else {
+        await client.auth.signOut();
+        callback(
+          null,
+          `Acesso negado: O e-mail (${session.user.email || 'usuário'}) não possui permissão de administrador. Adicione {"is_admin": true} no seu usuário no Supabase para acessar.`
+        );
+      }
     } else {
       callback(null);
     }
